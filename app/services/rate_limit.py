@@ -1,4 +1,4 @@
-from app.constants import redisClient
+from app.config import redis_client
 from app.exceptions import TooManyRequestsError
 
 def check_rate_limit(ipUser: str) -> None:
@@ -14,9 +14,9 @@ def check_rate_limit(ipUser: str) -> None:
         TooManyRequestsError: Se o usuário exceder 10 requisições por minuto.
     """
     key = f"rate:{ipUser}"
-    current = redisClient.incr(key)
+    current = redis_client.incr(key)
     if current == 1:
-        redisClient.expire(key, 60)
+        redis_client.expire(key, 60)
 
     if current >= 11:
         raise TooManyRequestsError("Acesso negado. Tentativas excessivas")

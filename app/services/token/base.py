@@ -1,6 +1,6 @@
 import jwt
 
-from app.constants import redisClient
+from app.config import redis_client_async
 
 class BaseService:
 
@@ -8,13 +8,16 @@ class BaseService:
         return jwt.encode(payload, key, "HS256")
 
     def _decode(self, token: str, key: str) -> dict:
-        return jwt.decode(token, key, "HS256")
+        return jwt.decode(token, key, algorithms=["HS256"])
 
-    def _store_with_expiration(self, key: str, value, expiration: int):
-        redisClient.setex(key, expiration, value)
+    async def _store_with_expiration(self, key: str, value, expiration: int):
+        await redis_client_async.set(key, value, expiration)
 
-    def _get_or_none(self, key: str):
-        return redisClient.get(key)
+    async def _consume_or_none(self, key: str):
+        return await redis_client_async.getdel(key)
+    
+    async def _fetch_or_none(self, key: str):
+        return await redis_client_async.get(key)
 
-    def _delete(self, key: str):
-        redisClient.delete(key)
+    async def _delete(self, key: str) -> None:
+        await redis_client_async.delete(key)

@@ -1,8 +1,8 @@
 import strawberry
 
-from app.graphql.queries.user_query import UserQuery
+from app.graphql.queries import UserQuery, AdminQuery
 
 @strawberry.type
-class Query(UserQuery):
+class Query(UserQuery, AdminQuery):
     pass
 

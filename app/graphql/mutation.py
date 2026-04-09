@@ -1,7 +1,9 @@
 import strawberry
 
-from app.graphql.mutations.user_mutation import UserMutation
-from app.graphql.mutations.admin_mutation import AdminMutation
+from app.graphql.mutations import (
+    UserMutation, 
+    AdminMutation
+)
 
 @strawberry.type
 class Mutation(UserMutation, AdminMutation):

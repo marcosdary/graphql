@@ -162,3 +162,14 @@ class ForbiddenActionError(Exception):
         status_code (int): Código HTTP 403.
     """
     status_code = status.HTTP_403_FORBIDDEN
+
+# =============================================================================
+# EXCEÇÃO PARA ERROR DE SERVIDOR EXTERNO
+# ============================================================================
+class ApiError(Exception):
+    """Erro retornado por integração com serviço externo.
+
+    Attributes:
+        status_code (int): Código HTTP 502.
+    """
+    status_code = status.HTTP_502_BAD_GATEWAY

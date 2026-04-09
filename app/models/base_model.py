@@ -20,13 +20,13 @@ class Base(DeclarativeBase):
 
     createdAt = Column(
         DateTime,
-        default=datetime.now(),
+        default=datetime.now,
         nullable=False
     )
 
     updatedAt = Column(
         DateTime,
-        default=datetime.now(),
-        onupdate=datetime.now(),
+        default=datetime.now,
+        onupdate=datetime.now,
         nullable=False
     )

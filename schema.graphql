@@ -1,0 +1,149 @@
+"""
+Enuns
+"""
+enum Roles {
+    USER 
+    ADMIN 
+    SUPER_ADMIN 
+}
+
+enum ExpirationApiKey {
+    ONE_HOUR 
+    ONE_DAY 
+    TWO_DAYS 
+    SEVEN_DAYS 
+    THIRTY_DAYS
+    NINETY_DAYS
+    ONE_YEAR
+}
+
+"""
+Types
+"""
+type ApiErrorType {
+    errorName: String!
+    typeError: String!
+    statusCode: Int
+}
+
+type UserPublicType {
+    name: String
+    email: String!
+    createdAt: String
+    updatedAt: String
+}
+
+type UserPrivateType {
+    userId: String!
+    name: String
+    email: String!
+    password: String
+    role: Roles
+    isDeleted: Boolean
+    createdAt: String
+    updatedAt: String
+}
+
+type SessionType {
+    sessionId: String!
+    createdAt: String!
+    expiresAt: String!
+}
+
+type TwoFactorAuthType {
+    token: String!
+    number: Int!
+    expiresAt: String
+}
+
+type ApiKeyType {
+    token: String
+    expiresAt: String
+}
+
+type ApiResponseType {
+    success: Boolean
+    data: Data
+    error: ApiErrorType
+}
+
+type UserListType {
+    users: [UserPrivateType]
+}
+
+
+"""
+Inputs
+"""
+input UserInput {
+    name: String
+    email: String
+    password: String
+}
+
+input UserPrivateInput {
+    name: String
+    email: String
+    password: String
+    role: Roles
+}
+
+input UserUpdatePublicInput {
+    name: String
+}
+
+input UserUpdatePrivateInput {
+    userId: String!
+    name: String
+    email: String
+    role: Roles 
+    password: String
+}
+
+input UserLoginInput {
+    email: String!
+    password: String!
+}
+
+input Verify2FAInput {
+    number: Int!
+    token: String!
+}
+
+input ForgotPasswordInput {
+    email: String!
+}
+
+input UserResetPasswordInput {
+    password: String!
+    token: String!
+}
+
+input ApiKeyInput {
+    expiration: ExpirationApiKey
+}
+
+union Data = UserPublicType | UserPrivateType | ApiKeyType | SessionType | TwoFactorAuthType | UserListType | Boolean
+
+type Mutation {
+    create(schema: UserInput): ApiErrorType!
+    login(schema: UserLoginInput!): ApiResponseType!
+    update(schema: UserUpdatePublicInput): ApiResponseType!
+    verifyTwoFactor (schema: Verify2FAInput): ApiResponseType!
+    delete: ApiResponseType!
+    forgotPassword(schema: ForgotPasswordInput): ApiResponseType!
+    resetPassword(schema: UserResetPasswordInput): ApiResponseType!
+    createApiKey(schema: ApiKeyInput!): ApiResponseType!
+    createUserByAdmin(schema: UserPrivateInput!): ApiResponseType!
+    updateUserByAdmin(schema: UserUpdatePrivateInput!): ApiResponseType!
+    deleteUserByAdmin(userId: String!): ApiResponseType!
+    deleteApiKey(key: String!): ApiResponseType!
+}
+
+type Query {
+    listUsers(page: Int = 1, limit: Int = 10): ApiResponseType!
+    getByIdUser(userId: String!): ApiResponseType!
+    getUser: ApiResponseType!
+}
+
+

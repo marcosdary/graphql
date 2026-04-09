@@ -1,4 +1,4 @@
-from pydantic import field_serializer, field_validator
+from pydantic import field_validator
 import re
 from random import randint
 
@@ -31,42 +31,7 @@ class UserCreateModel(UserModel):
     name: str
     email: str
     password: str | None = str(randint(100_000, 999_999))
-    role: str | None = Roles.USER.value
-
-    @field_serializer("password", mode="plain")
-    def serialize_password(self, value: str) -> str:
-        """
-        Serializa a senha do usuário aplicando hash antes da persistência.
-
-        Args:
-            value (str): Senha em texto puro fornecida pelo usuário.
-
-        Returns:
-            str: Senha criptografada utilizando o serviço de hash.
-        """
-        hash_password = HashPassword()
-        return hash_password.hash_password(value)
-
-    @field_validator("role", mode="after")
-    def validate_role(cls, role) -> str:
-        """
-        Valida se o papel (role) informado existe nas opções disponíveis.
-
-        Args:
-            role (str): Papel informado para o usuário.
-
-        Returns:
-            str: Valor válido correspondente ao papel definido na enumeração Roles.
-
-        Raises:
-            UnprocessableEntity: Caso o papel informado não exista nas opções permitidas.
-        """
-        field = getattr(Roles, role, None)
-        if not field:
-            raise UnprocessableEntity(
-                "Escolha uma das opções de status para o cliente 'admin' ou 'user'."
-            )
-        return field.value
+    role: Roles | None = Roles.USER
 
     @field_validator("email", mode="after")
     def validate_email(cls, email) -> str:

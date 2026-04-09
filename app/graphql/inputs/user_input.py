@@ -22,12 +22,19 @@ class UserInput:
 class UserPrivateInput:
     name: strawberry.auto
     email: strawberry.auto
+    password: strawberry.auto
     role: strawberry.auto
 
 # Atualização de suas informações
 @pydantic_input(UserUpdateModel)
-class UserUpdateInput:
+class UserUpdatePublicInput:
     name: strawberry.auto 
+
+
+# Atualização de suas informações
+@pydantic_input(UserUpdateModel, all_fields=True)
+class UserUpdatePrivateInput:
+    pass
 
 # Login
 @pydantic_input(UserLoginModel, all_fields=True)

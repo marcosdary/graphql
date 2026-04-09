@@ -1,6 +1,7 @@
 from pydantic import field_serializer
 
 from app.dto.user.model import UserModel
+from app.constants import Roles
 from app.services import HashPassword
 
 
@@ -17,9 +18,10 @@ class UserUpdateModel(UserModel):
         email (str | None): Novo e-mail do usuário. Pode ser None se não for alterado.
         password (str | None): Nova senha do usuário. Se None, a senha não será alterada.
     """
-
+    userId: str | None = None
     name: str | None = None
     email: str | None = None
+    role: Roles | None = None
     password: str | None = None
 
     @field_serializer("password", mode="plain")
@@ -37,6 +39,5 @@ class UserUpdateModel(UserModel):
             str: Senha criptografada ou o valor original se não houver senha.
         """
         if value:
-            hash_password = HashPassword()
-            return hash_password.hash_password(value)
+            return HashPassword.hash_password(value)
         return value

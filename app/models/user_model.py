@@ -1,8 +1,8 @@
-from sqlalchemy import Column, String, DateTime, Boolean, Enum, func
+from sqlalchemy import Column, String, Boolean, Enum
 from uuid import uuid4
 
 from app.models.base_model import Base
-
+from app.constants import Roles
 class User(Base):
     """Modelo de usuário para o banco de dados.
 
@@ -23,7 +23,7 @@ class User(Base):
 
     userId = Column(String(255), primary_key=True, default=lambda: str(uuid4()))
     name = Column(String(255), nullable=False)
-    role = Column(Enum("ADMIN", "USER", "SUPER_ADMIN"), nullable=False, default="USER")
+    role = Column(Enum(Roles), nullable=False, default="USER")
     email = Column(String(255), nullable=False, unique=True)
     isDeleted = Column(Boolean, default=False)
     password = Column(String(255), nullable=False)

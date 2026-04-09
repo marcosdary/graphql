@@ -1,9 +1,12 @@
 from strawberry.experimental.pydantic import type as pydantic_type
 import strawberry
 
-from app.dto import two_factor_auth
-
-@pydantic_type(two_factor_auth.TwoFactorAuthModel)
+from app.dto.two_factor_auth import TwoFactorAuthModel
+@pydantic_type(TwoFactorAuthModel, all_fields=True)
 class TwoFactorAuthType:
-    token: strawberry.auto
-    expiresAt: strawberry.auto
+    pass
+
+
+
+
+

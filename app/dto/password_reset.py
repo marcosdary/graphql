@@ -19,7 +19,6 @@ class PasswordResetModel(BaseModel):
 
     token: str
     number: int | None = None
-    message: str | None = None
     expiresAt: datetime | None = None
 
     @field_serializer("expiresAt", mode="plain")

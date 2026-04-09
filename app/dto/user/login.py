@@ -34,6 +34,7 @@ class UserLoginModel(UserModel):
         Raises:
             InvalidFieldsException: Caso o e-mail esteja em formato inválido.
         """
+        
         pattern = r'^[\w\.-]+@[\w\.-]+\.\w+$'
         if re.match(pattern, email) is None:
             raise InvalidFieldsException(

@@ -6,8 +6,9 @@ class HashPassword:
     Fornece métodos para gerar hashes seguros de senhas e verificar
     se uma senha em texto plano corresponde ao hash armazenado.
     """
-
-    def hash_password(self, password: str) -> str:
+    
+    @staticmethod
+    def hash_password(password: str) -> str:
         """Gera um hash seguro para a senha fornecida.
 
         Args:
@@ -17,8 +18,9 @@ class HashPassword:
             str: Hash da senha codificado em UTF-8.
         """
         return hashpw(password.encode(), gensalt()).decode()
-
-    def verify_password(self, plain: str, hashed: str) -> bool:
+    
+    @staticmethod
+    def verify_password(plain: str, hashed: str) -> bool:
         """Verifica se uma senha em texto plano corresponde ao hash fornecido.
 
         Args:

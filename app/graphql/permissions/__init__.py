@@ -1,0 +1,3 @@
+from app.graphql.permissions.api_key_permission import ApiKeyPermission
+from app.graphql.permissions.session_permission import SessionPermission
+from app.graphql.permissions.routers_protects_permission import RoutersProtectPermission

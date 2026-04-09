@@ -25,13 +25,13 @@ class UserReadModel(UserModel):
     """
 
     userId: str
-    name: str
+    name: str | None = None
     email: str
-    password: str
-    role: str
-    isDeleted: bool
-    createdAt: datetime
-    updatedAt: datetime
+    password: str | None = None
+    role: str | None = None
+    isDeleted: bool | None = None
+    createdAt: datetime | None = None
+    updatedAt: datetime | None = None
 
     @field_serializer("createdAt", "updatedAt", mode="plain")
     def serialize_dates(self, value: datetime | None) -> str | None:

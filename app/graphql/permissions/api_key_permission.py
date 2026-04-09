@@ -10,7 +10,7 @@ class ApiKeyPermission(BasePermission):
         self._api_key_service = ApiKeyService()
         super().__init__()
 
-    def has_permission(self, source, info, **kwargs) -> bool:
+    async def has_permission(self, source, info, **kwargs) -> bool:
         try:
             header = info.context["request"].headers
             auth = header.get("Authorization")
@@ -27,7 +27,7 @@ class ApiKeyPermission(BasePermission):
             except ValueError:
                 return False
             
-            self._api_key_service.check_api_key(token)
+            await self._api_key_service.check_api_key(token)
             
             return True
         

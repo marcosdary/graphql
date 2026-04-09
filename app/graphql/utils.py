@@ -1,12 +1,14 @@
 from app.dto.api_error import ApiErrorModel
-from app.graphql.base_type import ApiResponse
-from app.constants import ExpirationTimes
-from app.services import token, Email
-from app.template import Template
+from app.graphql.types import ApiResponseType
+from app.constants import SendType, ExpirationAt
+from app.services import token, queries
+from app.dto.notification_system import (
+    NotificationSystemCreateModel
+)
 
 
-def build_response(success: bool, data=None, exc: Exception | None = None) -> ApiResponse:
-    """Constrói um ApiResponse padronizado.
+def build_response(success: bool, data=None, exc: Exception | None = None) -> ApiResponseType:
+    """Constrói um ApiResponseType padronizado.
 
     Args:
         success: Indica se a operação foi bem‑sucedida.
@@ -14,13 +16,13 @@ def build_response(success: bool, data=None, exc: Exception | None = None) -> Ap
         exc: Exceção capturada quando success=False.
 
     Returns:
-        ApiResponse: objeto pronto para ser retornado ao cliente.
+        ApiResponseType: objeto pronto para ser retornado ao cliente.
     """
     if success:
-        return ApiResponse(success=True, data=data)
+        return ApiResponseType(success=True, data=data)
 
     # Caso de erro
-    return ApiResponse(
+    return ApiResponseType(
         success=False,
         error=ApiErrorModel(
             typeError=exc.__class__.__name__ if exc else "Error",
@@ -30,14 +32,30 @@ def build_response(success: bool, data=None, exc: Exception | None = None) -> Ap
     )
 
 
-def create_session(userId: str, role: str):
+async def create_session(userId: str, role: str):
     session_service = token.SessionService()
-    return session_service.create_session(
+    return await session_service.create_session(
         userId=userId, 
-        role=role, 
-        expiration=ExpirationTimes.SESSION_EXPIRATION.value
+        role=role
     )
 
-def send_email(subject: str, to_email: str, template: Template): 
-    email = Email(to_email)
-    email.send(subject=subject, body=template.get_template)    
+async def send_notification_to_email(
+    recipient_email: str, 
+    send_type: SendType, 
+    expires_at: ExpirationAt = None,
+    token: str = None, 
+    code: str = None, 
+    action_link: str = None
+) -> None:
+    notification_system_service = queries.NotificationSystemService()
+
+    schema = NotificationSystemCreateModel(
+        recipientEmail=recipient_email,
+        sendType=send_type,
+        actionLink=action_link,
+        token=token,
+        code=code,
+        expiresAt=expires_at
+    )
+
+    await notification_system_service.create(schema)
