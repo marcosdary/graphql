@@ -104,18 +104,18 @@ class UserRepository:
     
             return UserReadModel.model_validate(user)    
 
-    async def update_user(self, userId: str, user_update: UserUpdateModel) -> UserReadModel:
+    async def update_user(self, user_update: UserUpdateModel) -> UserReadModel:
         async with AsyncSession() as session:
             query = await session.execute(
                 select(User).where(
-                    User.userId==userId, 
+                    User.userId==user_update.userId, 
                     User.isDeleted != True
                 )
             )
             user = query.scalars().first()
             
             if not user:
-                raise NotFoundError("Usuário não encontrado.")
+                raise NotFoundError("Usuário não encontrado ou removido do sistema.")
             
             if user_update.role == Roles.SUPER_ADMIN:
                 raise DuplicateReviewError(

@@ -98,7 +98,7 @@ class AdminMutation:
         try:
             user_update = schema.to_pydantic()
             user_repo = UserRepository()
-            data = await user_repo.update_user(user_update.userId, user_update)
+            data = await user_repo.update_user(user_update)
             return build_response(
                 success=True,
                 data=data

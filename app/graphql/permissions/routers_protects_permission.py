@@ -37,14 +37,26 @@ class RoutersProtectPermission(BasePermission):
             # o token já foi validado pelo middleware, mas garantimos aqui
             # que ele esteja presente (fallback) e recuperamos o payload.
             header: dict = info.context["request"].headers
-            
-            session_id = header.get("session-id")
+            auth = header.get("Authorization")
+            accept = header.get("Accept")    
             field_name = info._raw_info.field_name
 
-            if not session_id:
+            if accept != "application/json":
+                raise InvalidFieldsException("O formato de resposta é application/json. Por favor, organize seu cabeçalho.")
+
+            if not auth:
                 raise InvalidFieldsException("Não possui o Session ID. Forneça para completar a ação")
 
-            response = await check_session_permission(session_id, field_name)
+            try:
+                scheme, token = auth.split(" ")
+
+                if scheme.lower() != "bearer":
+                    return False
+                
+            except ValueError:
+                return False
+
+            response = await check_session_permission(token, field_name)
                 
             info.context["user"] = response
         

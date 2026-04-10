@@ -4,9 +4,8 @@ from strawberry.exceptions import StrawberryGraphQLError
 from app.services import token, rate_limit
 from app.exceptions import InvalidFieldsException
 
-async def check_session_permission(session_id: str, field_name: str) -> dict:
+async def check_session_permission(session_id: str) -> dict:
     session_service = token.SessionService()
-  
     return await session_service.verify_session(session_id=session_id)
 
 class SessionPermission(BasePermission):
@@ -24,18 +23,26 @@ class SessionPermission(BasePermission):
             header: dict = info.context["request"].headers
             params: dict = info.context["request"].query_params
             client = info.context["request"].client
-            session_id = header.get("session-id")
-            field_name = info._raw_info.field_name
+            auth = header.get("Authorization")
 
-            if not session_id:
+            if not auth:
                 raise InvalidFieldsException("Não possui o Session ID. Forneça para completar a ação")
-
-            response = await check_session_permission(session_id, field_name)
 
             # self._check_limit(client.host)
 
+            try:
+                scheme, token = auth.split(" ")
+
+                if scheme.lower() != "bearer":
+                    return False
+                
+            except ValueError:
+                return False
+            
+            response = await check_session_permission(token)
+
             if params.get("logout") == "true":
-                await self._session_service.delete_session(session_id)
+                await self._session_service.delete_session(token)
 
             info.context["user"] = response
         
