@@ -1,0 +1,52 @@
+{
+    "data": {
+        "listUsers": {
+            "success": true,
+            "data": {
+                "users": [
+                    {
+                        "userId": "b9c24374-bcd5-460f-a78d-e2c48661d1bb",
+                        "name": "Mark Manson",
+                        "email": "mark.manson@gmail.com",
+                        "role": "USER",
+                        "isDeleted": false,
+                        "password": null,
+                        "createdAt": "2026-04-03T09:54:13.853371-03:00",
+                        "updatedAt": "2026-04-06T17:02:37.250598-03:00"
+                    },
+                    {
+                        "userId": "baf3a2da-d3e3-402f-8fd3-51359a09d9fe",
+                        "name": "Phil Colen",
+                        "email": "phil@gmail.com",
+                        "role": "ADMIN",
+                        "isDeleted": true,
+                        "password": null,
+                        "createdAt": "2026-04-03T09:57:05.589100-03:00",
+                        "updatedAt": "2026-04-10T15:41:17.843660-03:00"
+                    },
+                    {
+                        "userId": "98e81cf2-48c9-48ab-be66-bdb35fcf6ad9",
+                        "name": "Nome do Usuário",
+                        "email": "nome_do_email_8@dominio.com",
+                        "role": "USER",
+                        "isDeleted": true,
+                        "password": null,
+                        "createdAt": "2026-04-03T09:57:31.225718-03:00",
+                        "updatedAt": "2026-04-03T16:18:25.234465-03:00"
+                    },
+                    {
+                        "userId": "e4093c44-5f13-465e-8562-53bc75693578",
+                        "name": "Nome do Usuário",
+                        "email": "nome_do_email_8@dominio.com",
+                        "role": "SUPER_ADMIN",
+                        "isDeleted": false,
+                        "password": null,
+                        "createdAt": "2026-04-03T12:06:18.306308-03:00",
+                        "updatedAt": "2026-04-09T11:15:55.068583-03:00"
+                    }
+                ]
+            },
+            "error": null
+        }
+    }
+}
