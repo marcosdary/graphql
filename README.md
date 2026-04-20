@@ -167,8 +167,8 @@ Expiration times currently defined in code:
 
 Depending on the resolver, the API may require one or both headers below:
 
-- `Authorization: Bearer <api-key>`
-- `session-id: <session-token>`
+- `Authorization: Bearer <session-token>`
+- `api-key: <api-key>`
 
 Resolver protection in practice:
 
