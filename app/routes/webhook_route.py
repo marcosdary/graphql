@@ -25,6 +25,7 @@ async def webhook(response: Response, request: Request) -> dict:
         return {}
     try: 
         decoded = decode_sign_token(key=settings.WEBHOOK_SECRET, value=value)
+        print(decoded)
     except Exception: 
         response.status_code = status.HTTP_400_BAD_REQUEST
         return {}

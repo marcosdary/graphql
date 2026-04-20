@@ -20,7 +20,7 @@ from app.graphql.inputs import (
 )
 
 # Responses
-from app.graphql.utils import build_response, create_session, send_notification_to_email
+from app.graphql.utils import build_response, create_session
 
 # Permissions
 from app.graphql.permissions import (
@@ -31,7 +31,6 @@ from app.graphql.permissions import (
 # Types
 from app.graphql.types import (
     UserPublicType, 
-    UserPrivateType, 
     SessionType, 
     TwoFactorAuthType, 
     PasswordResetType, 
@@ -67,13 +66,7 @@ class UserMutation:
             user_repo = UserRepository()
             
             data = await user_repo.create_user(user)
-            """
-            await send_notification_to_email(
-                recipient_email=data.email,
-                action_link="www.google.com",
-                send_type=SendType.REGISTER
-            )
-            """
+           
             return build_response(
                 success=True,
                 data=data
@@ -105,14 +98,7 @@ class UserMutation:
                 userId=data.userId,
                 role=data.role
             )
-            """
-            await send_notification_to_email(
-                recipient_email=data.email,
-                send_type=SendType.TWO_FACTOR_AUTH,
-                code=str(create.number),
-                expires_at=ExpirationAt.TEN_MINUTES
-            )
-            """
+        
             return build_response(True, data=create)
         
         except (
@@ -163,15 +149,7 @@ class UserMutation:
                     "userId": data.userId
                 }
             )
-            """
-            await send_notification_to_email(
-                recipient_email=data.email,
-                send_type=SendType.PASSWORD_RESET,
-                action_link="www.google.com",
-                token=forgot.token,
-                expires_at=ExpirationAt.FIFTEEN_MINUTES
-            )
-            """
+            
             return build_response(True, data=forgot)
         except (
             ApiError, DuplicateReviewError, EntityValidationError, ExpirationError,
@@ -196,17 +174,13 @@ class UserMutation:
             
             user_repo = UserRepository()
 
-            data = await user_repo.update_user(
-                userId=userId, 
-                user_update=UserUpdateModel(password=data_pydantic.password)
+            data = await user_repo.update_user( 
+                user_update=UserUpdateModel(
+                    userId=userId,
+                    password=data_pydantic.password
+                )
             )
-            """
-            await send_notification_to_email(
-                recipient_email=data.email,
-                send_type=SendType.PASSWORD_CHANGE,
-                action_link="www.google.com",
-            )
-            """
+            
             return build_response(True, data=data)
         
         except (
@@ -216,8 +190,8 @@ class UserMutation:
             UnprocessableEntity,
         ) as exc:
             return build_response(False, exc=exc)
-        except Exception:
-            return build_response(False, exc=UnknownError("Erro interno do servidor."))
+        except Exception as exc:
+            return build_response(False, exc=UnknownError(f"Erro interno do servidor"))
           
     @strawberry.mutation(permission_classes=[ApiKeyPermission, SessionPermission])
     async def update(self, info, schema: UserUpdatePublicInput) -> ApiResponseType[UserPublicType, ApiErrorType]:  

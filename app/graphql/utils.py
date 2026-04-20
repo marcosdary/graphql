@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from app.dto.api_error import ApiErrorModel
 from app.graphql.types import ApiResponseType
 from app.constants import SendType, ExpirationAt
@@ -19,7 +21,11 @@ def build_response(success: bool, data=None, exc: Exception | None = None) -> Ap
         ApiResponseType: objeto pronto para ser retornado ao cliente.
     """
     if success:
-        return ApiResponseType(success=True, data=data)
+        return ApiResponseType(
+            success=True, 
+            data=data, 
+            timestamp=datetime.now().timestamp()
+        )
 
     # Caso de erro
     return ApiResponseType(
@@ -29,6 +35,7 @@ def build_response(success: bool, data=None, exc: Exception | None = None) -> Ap
             errorName=str(exc) if exc else "",
             statusCode=getattr(exc, "status_code", 500),
         ),
+        timestamp=datetime.now().timestamp()
     )
 
 

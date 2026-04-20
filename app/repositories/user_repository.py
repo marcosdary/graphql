@@ -1,5 +1,5 @@
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
-from sqlalchemy import select, delete
+from sqlalchemy import select, delete, func
 from fastapi.concurrency import run_in_threadpool
 
 from app.models import User
@@ -10,6 +10,7 @@ from app.dto.user import (
     UserLoginModel,
     UserListModel
 )
+from app.dto.pagination_dto import PaginationSchema
 
 from app.config import AsyncSessionLocal as AsyncSession
 from app.constants import Roles
@@ -153,20 +154,36 @@ class UserRepository:
             return UserReadModel.model_validate(user)
         
         
-    async def list_users(self, page: int = 1, limit: int = 10) -> UserListModel:
+    async def list_users(self, pagination: PaginationSchema) -> UserListModel:
         async with AsyncSession() as session:
-            offset = (page - 1) * limit
-            query = await session.execute(
-                select(
-                    User.userId, User.name, User.email, 
-                    User.role, User.isDeleted, User.createdAt, 
-                    User.updatedAt
-                ).offset(offset).limit(limit).order_by(User.createdAt)
+           
+            query = select(
+                User.userId, User.name, User.email, 
+                User.role, User.isDeleted, User.createdAt, 
+                User.updatedAt
             )
-            users = query.all()
+
+            stmt = await session.execute(
+                query.order_by(User.createdAt.desc())
+            )
+            users = stmt.all()
+            total = await self.__count_rows()
+
+
+            page, limit = 1, total
+
+            if not pagination.all_:
+                offset = (page - 1) * limit
+                query = query.offset(offset).limit(limit)
+            
+                page, limit = pagination.page, pagination.limit
 
             return UserListModel(
-                users=[UserReadModel.model_validate(u) for u in users]
+                items=[UserReadModel.model_validate(u) for u in users],
+                total=total,
+                page=page,
+                limit=limit,
+                hasNextPage=(limit * page) < total
             )
 
 
@@ -206,4 +223,10 @@ class UserRepository:
             except SQLAlchemyError as exc:
                 await session.rollback()
                 raise exc
+            
+    # Others methods for count rows
 
+    async def __count_rows(self) -> int:
+        async with AsyncSession() as session:
+            count_query = select(func.count()).select_from(User)
+            return await session.scalar(count_query)

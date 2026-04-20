@@ -19,7 +19,7 @@ app.add_middleware(
 
 app.include_router(webhook_route.router)
 
-schema = strawberry.Schema(query=Query, mutation=Mutation)
+schema = strawberry.Schema(query=Query, mutation=Mutation, extensions=[])
 
 graphql_app = GraphQLRouter(schema=schema)
 

@@ -15,3 +15,13 @@ create table users (
     "updatedAt" timestamp default current_timestamp
 );
 
+create index "idx_users_userId" on users("userId");
+
+create index "idx_users_email" on users(email);
+
+create index "idx_users_get_by_email" on users("isDeleted", email);
+
+create index "idx_users_get_by_id" on users("isDeleted", "userId");
+
+create index "idx_users_isDeleted" on users("isDeleted");
+

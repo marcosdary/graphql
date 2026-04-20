@@ -22,7 +22,7 @@ from app.repositories import UserRepository
 from app.graphql.utils import build_response
 
 # Permissions
-from app.graphql.permissions import RoutersProtectPermission
+from app.graphql.permissions import SessionPermission
 
 # Services
 from app.services import token 
@@ -46,7 +46,7 @@ from app.exceptions import (
 @strawberry.type
 class AdminMutation:
     
-    @strawberry.mutation(permission_classes=[RoutersProtectPermission])
+    @strawberry.mutation(permission_classes=[SessionPermission])
     async def createApiKey(self, info, schema: ApiKeyInput) -> ApiResponseType[ApiKeyType, ApiErrorType]:
         try:
             api_key_service = token.ApiKeyService()
@@ -64,20 +64,14 @@ class AdminMutation:
         except Exception:
             return build_response(False, exc=UnknownError("Erro interno do servidor."))
 
-    @strawberry.mutation(permission_classes=[RoutersProtectPermission])
+    @strawberry.mutation(permission_classes=[SessionPermission])
     async def createUserByAdmin(self, schema: UserPrivateInput) -> ApiResponseType[UserPrivateType, ApiErrorType]:
         try:
             user = schema.to_pydantic()
             
             user_repo = UserRepository()
             data = await user_repo.create_user(user)
-            """
-            await send_notification_to_email(
-                recipient_email=data.email,
-                action_link="www.google.com",
-                send_type=SendType.REGISTER
-            )
-            """
+            
             return build_response(
                 success=True,
                 data=data
@@ -93,7 +87,7 @@ class AdminMutation:
         except Exception:
             return build_response(False, exc=UnknownError("Erro interno do servidor."))
         
-    @strawberry.mutation(permission_classes=[RoutersProtectPermission])
+    @strawberry.mutation(permission_classes=[SessionPermission])
     async def updateUserByAdmin(self, schema: UserUpdatePrivateInput) -> ApiResponseType[UserPrivateType, ApiErrorType]:  
         try:
             user_update = schema.to_pydantic()
@@ -113,7 +107,7 @@ class AdminMutation:
         except Exception:
             return build_response(False, exc=UnknownError("Erro interno do servidor."))
 
-    @strawberry.mutation(permission_classes=[RoutersProtectPermission])
+    @strawberry.mutation(permission_classes=[SessionPermission])
     async def deleteUserByAdmin(self, userId: str) -> ApiResponseType[bool, ApiErrorType]:
         try:
             user_repo = UserRepository()
@@ -129,7 +123,7 @@ class AdminMutation:
         except Exception:
             return build_response(False, exc=UnknownError("Erro interno do servidor."))
     
-    @strawberry.mutation(permission_classes=[RoutersProtectPermission])
+    @strawberry.mutation(permission_classes=[SessionPermission])
     async def deleteApiKey(self, key: str) -> ApiResponseType[bool, ApiErrorType]:
         try:
             api_key_service = token.ApiKeyService()

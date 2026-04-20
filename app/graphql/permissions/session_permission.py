@@ -2,11 +2,22 @@ from strawberry.permission import BasePermission
 from strawberry.exceptions import StrawberryGraphQLError
 
 from app.services import token, rate_limit
-from app.exceptions import InvalidFieldsException
+from app.constants import RolePermissions
+from app.exceptions import InvalidFieldsException, ProtectedRouteError
 
-async def check_session_permission(session_id: str) -> dict:
+async def check_session_permission(session_id: str, field_name: str) -> dict:
     session_service = token.SessionService()
-    return await session_service.verify_session(session_id=session_id)
+
+    data: dict = await session_service.verify_session(session_id=session_id)
+
+    role = data.get("role")
+
+    verify_field = getattr(RolePermissions, role)
+    
+    if not verify_field.has_permissions(field_name):
+        raise ProtectedRouteError("Forneça as credenciais corretas para acessar as informações.")
+    
+    return data
 
 class SessionPermission(BasePermission):
 
@@ -23,6 +34,7 @@ class SessionPermission(BasePermission):
             header: dict = info.context["request"].headers
             params: dict = info.context["request"].query_params
             client = info.context["request"].client
+            field_name = info._raw_info.field_name
             auth = header.get("Authorization")
 
             if not auth:
@@ -39,7 +51,7 @@ class SessionPermission(BasePermission):
             except ValueError:
                 return False
             
-            response = await check_session_permission(token)
+            response = await check_session_permission(token, field_name=field_name)
 
             if params.get("logout") == "true":
                 await self._session_service.delete_session(token)

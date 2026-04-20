@@ -11,7 +11,7 @@ class NotificationSystemClient:
 
     def _headers(self) -> dict:
         return {
-            "Authorization": f"Bearer {self._api_key}",
+            "X-Api-Key": self._api_key,
             "Content-Type": "application/json"
         }
     

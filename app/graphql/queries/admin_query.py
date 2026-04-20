@@ -7,11 +7,14 @@ from app.services.cache import UserCacheService
 
 # Permissions
 from app.graphql.permissions import (
-    RoutersProtectPermission
+    SessionPermission
 )
 
 # Responses
 from app.graphql.utils import build_response
+
+# Inputs
+from app.graphql.inputs import PaginationInput
 
 # Types
 from app.graphql.types import (
@@ -39,12 +42,12 @@ from app.exceptions import (
 @strawberry.type
 class AdminQuery:
 
-    @strawberry.field(permission_classes=[RoutersProtectPermission])
-    async def listUsers(self, page: int = 1, limit: int = 10) -> ApiResponseType[UserListType, ApiErrorType]:
+    @strawberry.field(permission_classes=[SessionPermission])
+    async def listUsers(self, schema: PaginationInput) -> ApiResponseType[UserListType, ApiErrorType]:
         try:
-            user_cache_service = UserCacheService()
-
-            data = await user_cache_service.list_users(page, limit)
+            user_repo = UserRepository()
+            schema = schema.to_pydantic()
+            data = await user_repo.list_users(pagination=schema)
             return build_response(
                 success=True,
                 data=data
@@ -57,9 +60,10 @@ class AdminQuery:
         ) as exc:
             return build_response(False, exc=exc)
         except Exception as exc:
+            print(exc)
             return build_response(False, exc=UnknownError("Erro interno do servidor."))
         
-    @strawberry.field(permission_classes=[RoutersProtectPermission])
+    @strawberry.field(permission_classes=[SessionPermission])
     async def getByIdUser(self, userId: str) -> ApiResponseType[UserPrivateType, ApiErrorType]:
         try:
             user_repo = UserRepository()
@@ -77,7 +81,7 @@ class AdminQuery:
             UnprocessableEntity,
         ) as exc:
             return build_response(False, exc=exc)
-        except Exception:
+        except Exception as exc:
             return build_response(False, exc=UnknownError("Erro interno do servidor."))
     
     

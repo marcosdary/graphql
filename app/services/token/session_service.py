@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from typing import Tuple
 
 from app.services.token.base import BaseService
 from app.dto.session import SessionModel
@@ -12,15 +13,20 @@ class SessionService(BaseService):
         self._session_expiration = ExpirationTimes.SESSION_EXPIRATION.value
         super().__init__()
 
-    async def create_session(self, **kwargs) -> SessionModel:
+    def __get_expiration(self) -> Tuple[datetime]:
+        now = datetime.now()
+        return now, now + timedelta(seconds=self._session_expiration)
+
+    async def create_session(self, **kwargs) -> SessionModel:     
+        now, expires_at = self.__get_expiration()
+        
         token = self._encode(kwargs, self._session_key)
         await self._store_with_expiration(token, kwargs.get("userId"), self._session_expiration)
 
-        now = datetime.now()
         return SessionModel(
             sessionId=token,
             createdAt=now,
-            expiresAt=now + timedelta(seconds=self._session_expiration)
+            expiresAt=expires_at
         )
 
     async def verify_session(self, session_id: str) -> dict:

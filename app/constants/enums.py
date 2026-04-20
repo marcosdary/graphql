@@ -20,25 +20,65 @@ class ExpirationTimes(Enum):
     TWO_FA_EXPIRATION = 600       # 10 minutos
     PASSWORD_RESET_EXPIRATION = 900  # 15 minutos
 
+class Permissions(Enum):
+    """Permissões atômicas por domínio."""
 
-class RolesRouters(Enum):
-    """Enumeração de rotas acessíveis por cada papel de usuário."""
+    # Usuários
+    LIST_USERS         = "listUsers"
+    GET_USER_BY_ID     = "getByIdUser"
+    CREATE_USER        = "createUserByAdmin"
+    UPDATE_USER        = "updateUserByAdmin"
+    DELETE_USER        = "deleteUserByAdmin"
+    CREATE             = "create"
+    LOGIN              = "login"
+    VERIFY_TWO_FACTOR  = "verifyTwoFactor" 
+    FORGOT_PASSWORD    = "forgotPassword"
+    RESET_PASSWORD     = "resetPassword"
+    UPDATE             = "update"
+    DELETE             = "delete"
+    GET_USER           = "getUser"
 
-    ADMIN = (
-        "listUsers",
-        "getAllPosts",
-        "getByIdUser"
-    )
 
-    SUPER_ADMIN = (
-        "listUsers",
-        "createUserByAdmin",
-        "createApiKey",
-        "deleteUserByAdmin",
-        "updateUserByAdmin",
-        "deleteApiKey",
-        "getByIdUser"
-    )
+    # API Keys
+    CREATE_API_KEY     = "createApiKey"
+    DELETE_API_KEY     = "deleteApiKey"
+
+# Permissões base — building blocks
+BASE_PERMISSIONS = frozenset()
+
+USER_PERMISSIONS = frozenset({
+    Permissions.CREATE,
+    Permissions.LOGIN,
+    Permissions.RESET_PASSWORD,
+    Permissions.VERIFY_TWO_FACTOR,
+    Permissions.FORGOT_PASSWORD,
+    Permissions.UPDATE,
+    Permissions.DELETE,
+    Permissions.GET_USER
+})
+
+ADMIN_PERMISSIONS = USER_PERMISSIONS | frozenset({
+    Permissions.LIST_USERS,
+    Permissions.GET_USER_BY_ID,
+})
+
+SUPER_ADMIN_PERMISSIONS =  ADMIN_PERMISSIONS | frozenset({
+    Permissions.CREATE_USER,
+    Permissions.UPDATE_USER,
+    Permissions.DELETE_USER,
+    Permissions.CREATE_API_KEY,
+    Permissions.DELETE_API_KEY,
+})
+
+class RolePermissions(Enum):
+    ADMIN       = ADMIN_PERMISSIONS
+    SUPER_ADMIN = SUPER_ADMIN_PERMISSIONS
+    USER = USER_PERMISSIONS
+
+    def has_permissions(self, permission: Permissions) -> bool:
+        permission = Permissions(permission)
+        
+        return permission in self.value
 
 class Roles(Enum):
     """Enumeração de papéis de usuário."""

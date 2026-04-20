@@ -9,3 +9,4 @@ class ApiResponseType(Generic[T, E]):
     success: bool
     data: T | None = None
     error: E | None = None
+    timestamp: float
