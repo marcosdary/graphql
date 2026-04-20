@@ -7,7 +7,9 @@ from app.services.cache import UserCacheService
 
 # Permissions
 from app.graphql.permissions import (
-    SessionPermission
+    SessionPermission,
+    RolePermission,
+    ApiKeyPermission
 )
 
 # Responses
@@ -42,7 +44,7 @@ from app.exceptions import (
 @strawberry.type
 class AdminQuery:
 
-    @strawberry.field(permission_classes=[SessionPermission])
+    @strawberry.field(permission_classes=[ApiKeyPermission, SessionPermission, RolePermission])
     async def listUsers(self, schema: PaginationInput) -> ApiResponseType[UserListType, ApiErrorType]:
         try:
             user_repo = UserRepository()
@@ -63,7 +65,7 @@ class AdminQuery:
             print(exc)
             return build_response(False, exc=UnknownError("Erro interno do servidor."))
         
-    @strawberry.field(permission_classes=[SessionPermission])
+    @strawberry.field(permission_classes=[ApiKeyPermission, SessionPermission, RolePermission])
     async def getByIdUser(self, userId: str) -> ApiResponseType[UserPrivateType, ApiErrorType]:
         try:
             user_repo = UserRepository()

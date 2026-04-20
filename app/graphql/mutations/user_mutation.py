@@ -25,7 +25,8 @@ from app.graphql.utils import build_response, create_session
 # Permissions
 from app.graphql.permissions import (
     SessionPermission, 
-    ApiKeyPermission
+    ApiKeyPermission,
+    RolePermission
 )
 
 # Types
@@ -197,11 +198,15 @@ class UserMutation:
     async def update(self, info, schema: UserUpdatePublicInput) -> ApiResponseType[UserPublicType, ApiErrorType]:  
         try:
             user = info.context["user"]
-            user_update = schema.to_pydantic()
+
+            payload = schema.to_pydantic()
+            user_update = payload.model_copy(update={"userId": user["userId"]})
+            
             user_repo = UserRepository()
+
             return build_response(
                 success=True,
-                data=await user_repo.update_user(user["userId"], user_update)
+                data=await user_repo.update_user(user_update)
             )
         except (
             ApiError, DuplicateReviewError, EntityValidationError, ExpirationError,

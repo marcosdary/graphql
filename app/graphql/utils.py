@@ -1,4 +1,5 @@
 from datetime import datetime
+from fastapi import Request, Response
 
 from app.dto.api_error import ApiErrorModel
 from app.graphql.types import ApiResponseType
@@ -66,3 +67,11 @@ async def send_notification_to_email(
     )
 
     await notification_system_service.create(schema)
+
+async def get_context(request: Request, response: Response):
+   
+    return {
+        "request": request,
+        "response": response,
+        "api_key": getattr(request.state, "api_key", None)
+    }

@@ -163,20 +163,21 @@ class UserRepository:
                 User.updatedAt
             )
 
-            stmt = await session.execute(
-                query.order_by(User.createdAt.desc())
-            )
-            users = stmt.all()
             total = await self.__count_rows()
-
-
-            page, limit = 1, total
+            
+            page, limit = 1, 10
 
             if not pagination.all_:
                 offset = (page - 1) * limit
                 query = query.offset(offset).limit(limit)
+
+                if pagination.page and pagination.limit:
+                    page, limit = pagination.page, pagination.limit
             
-                page, limit = pagination.page, pagination.limit
+            stmt = await session.execute(
+                query.order_by(User.createdAt.desc())
+            )
+            users = stmt.all()
 
             return UserListModel(
                 items=[UserReadModel.model_validate(u) for u in users],

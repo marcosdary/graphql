@@ -12,13 +12,8 @@ class ApiKeyPermission(BasePermission):
 
     async def has_permission(self, source, info, **kwargs) -> bool:
         try:
-            header = info.context["request"].headers
-            token = header.get("x-api-key")
-
-            if not token:
+            if not info.context.get("api_key"):
                 raise InvalidFieldsException("Rota protegida. Forneça sua API Key.")
-            
-            await self._api_key_service.check_api_key(token)
             
             return True
         

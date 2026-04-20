@@ -22,7 +22,11 @@ from app.repositories import UserRepository
 from app.graphql.utils import build_response
 
 # Permissions
-from app.graphql.permissions import SessionPermission
+from app.graphql.permissions import (
+    SessionPermission, 
+    RolePermission,
+    ApiKeyPermission
+)
 
 # Services
 from app.services import token 
@@ -46,7 +50,7 @@ from app.exceptions import (
 @strawberry.type
 class AdminMutation:
     
-    @strawberry.mutation(permission_classes=[SessionPermission])
+    @strawberry.mutation(permission_classes=[SessionPermission, RolePermission])
     async def createApiKey(self, info, schema: ApiKeyInput) -> ApiResponseType[ApiKeyType, ApiErrorType]:
         try:
             api_key_service = token.ApiKeyService()
@@ -64,7 +68,7 @@ class AdminMutation:
         except Exception:
             return build_response(False, exc=UnknownError("Erro interno do servidor."))
 
-    @strawberry.mutation(permission_classes=[SessionPermission])
+    @strawberry.mutation(permission_classes=[ApiKeyPermission, SessionPermission, RolePermission])
     async def createUserByAdmin(self, schema: UserPrivateInput) -> ApiResponseType[UserPrivateType, ApiErrorType]:
         try:
             user = schema.to_pydantic()
@@ -87,7 +91,7 @@ class AdminMutation:
         except Exception:
             return build_response(False, exc=UnknownError("Erro interno do servidor."))
         
-    @strawberry.mutation(permission_classes=[SessionPermission])
+    @strawberry.mutation(permission_classes=[ApiKeyPermission, SessionPermission, RolePermission])
     async def updateUserByAdmin(self, schema: UserUpdatePrivateInput) -> ApiResponseType[UserPrivateType, ApiErrorType]:  
         try:
             user_update = schema.to_pydantic()
@@ -107,7 +111,7 @@ class AdminMutation:
         except Exception:
             return build_response(False, exc=UnknownError("Erro interno do servidor."))
 
-    @strawberry.mutation(permission_classes=[SessionPermission])
+    @strawberry.mutation(permission_classes=[ApiKeyPermission, SessionPermission, RolePermission])
     async def deleteUserByAdmin(self, userId: str) -> ApiResponseType[bool, ApiErrorType]:
         try:
             user_repo = UserRepository()
@@ -123,7 +127,7 @@ class AdminMutation:
         except Exception:
             return build_response(False, exc=UnknownError("Erro interno do servidor."))
     
-    @strawberry.mutation(permission_classes=[SessionPermission])
+    @strawberry.mutation(permission_classes=[ApiKeyPermission, SessionPermission, RolePermission])
     async def deleteApiKey(self, key: str) -> ApiResponseType[bool, ApiErrorType]:
         try:
             api_key_service = token.ApiKeyService()
