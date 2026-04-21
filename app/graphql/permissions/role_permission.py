@@ -15,8 +15,6 @@ async def check_roles(role: str, field_name: str) -> None:
 
 class RolePermission(BasePermission):
 
-        
-
     async def has_permission(self, source, info, **kwargs):
         try:
         

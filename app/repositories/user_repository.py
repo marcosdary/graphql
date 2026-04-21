@@ -1,5 +1,7 @@
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
-from sqlalchemy import select, delete, func
+from sqlalchemy import select, delete, func, and_
+from typing import List
+from datetime import datetime, time, timedelta
 from fastapi.concurrency import run_in_threadpool
 
 from app.models import User
@@ -8,9 +10,10 @@ from app.dto.user import (
     UserReadModel,
     UserUpdateModel,
     UserLoginModel,
-    UserListModel
+    UserListModel,
+    FilterByModel
 )
-from app.dto.pagination_dto import PaginationSchema
+from app.dto.pagination import PaginationModel
 
 from app.config import AsyncSessionLocal as AsyncSession
 from app.constants import Roles
@@ -154,7 +157,7 @@ class UserRepository:
             return UserReadModel.model_validate(user)
         
         
-    async def list_users(self, pagination: PaginationSchema) -> UserListModel:
+    async def list_users(self, pagination: PaginationModel, filter_by: FilterByModel = None) -> UserListModel:
         async with AsyncSession() as session:
            
             query = select(
@@ -164,6 +167,8 @@ class UserRepository:
             )
 
             total = await self.__count_rows()
+
+            filters = self.__filters_by(filter_by=filter_by)
             
             page, limit = 1, 10
 
@@ -175,7 +180,11 @@ class UserRepository:
                     page, limit = pagination.page, pagination.limit
             
             stmt = await session.execute(
-                query.order_by(User.createdAt.desc())
+                query.where(
+                    and_(*filters)
+                ).order_by(
+                    User.createdAt.desc()
+                )
             )
             users = stmt.all()
 
@@ -231,3 +240,38 @@ class UserRepository:
         async with AsyncSession() as session:
             count_query = select(func.count()).select_from(User)
             return await session.scalar(count_query)
+
+    def __filters_by(self, filter_by: FilterByModel = None) -> List[bool]:
+        filters = []
+
+        if not filter_by:
+            return filters
+        
+        if filter_by.name:
+            name = filter_by.name.strip()
+            filters.append(
+                User.name.ilike(f"%{name}%")
+            )
+
+        if filter_by.isDeleted:
+            filters.append(
+                User.isDeleted == filter_by.isDeleted
+            )
+
+        if filter_by.role:
+            filters.append(
+                User.role == filter_by.role
+            )
+
+        if filter_by.createdAt:
+            start = datetime.combine(filter_by.createdAt, time.min)
+            end = start + timedelta(days=1)
+
+            filters.append(
+                User.createdAt >= filter_by.createdAt
+            )
+            filters.append(
+                User.createdAt < end
+            )
+
+        return filters

@@ -9,5 +9,6 @@ from app.graphql.inputs.user_input import (
     UserInput,
     Verify2FAInput,
     UserPrivateInput,
-    UserUpdatePublicInput
+    UserUpdatePublicInput,
+    FilterByInput,
 )

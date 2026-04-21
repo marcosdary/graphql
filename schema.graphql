@@ -9,6 +9,8 @@ Exemplo: 2026-04-16T14:30:00Z
 """
 scalar DateTime
 
+scalar Date
+
 """
 Enuns
 """
@@ -128,6 +130,13 @@ input PaginationInput {
     all_: Boolean
 }
 
+input FilterByInput {
+    name: String
+    createdAt: Date
+    isDeleted: Boolean
+    role: Roles
+}
+
 input Verify2FAInput {
     number: Int!
     token: String!
@@ -164,7 +173,7 @@ type Mutation {
 }
 
 type Query {
-    listUsers(schema: PaginationInput!): ApiResponseType!
+    listUsers(pagination: PaginationInput!, filter_by: FilterByInput): ApiResponseType!
     getByIdUser(userId: String!): ApiResponseType!
     getUser: ApiResponseType!
 }

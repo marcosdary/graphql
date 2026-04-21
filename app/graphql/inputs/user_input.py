@@ -5,7 +5,8 @@ from app.dto.user import (
     UserCreateModel,
     UserUpdateModel,
     UserLoginModel,
-    UserResetPasswordModel
+    UserResetPasswordModel,
+    FilterByModel,
 )
 from app.dto.two_factor_auth import TwoFactorAuthModel
 from app.dto.password_reset import PasswordResetModel
@@ -63,6 +64,11 @@ class VerifyCodeInput:
 # Redefinir nova senha
 @pydantic_input(UserResetPasswordModel, all_fields=True)
 class UserResetPasswordInput:
+    pass
+
+# Filtrar por um determinado campo do model do usuário
+@pydantic_input(FilterByModel, all_fields=True)
+class FilterByInput:
     pass
 
 

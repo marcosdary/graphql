@@ -69,7 +69,6 @@ async def send_notification_to_email(
     await notification_system_service.create(schema)
 
 async def get_context(request: Request, response: Response):
-   
     return {
         "request": request,
         "response": response,

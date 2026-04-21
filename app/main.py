@@ -7,6 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.graphql.query import Query
 from app.graphql.mutation import Mutation
 from app.midlleware import ApiKeyMidlleware
+from app.graphql.extensions import ValidateExtension
 from app.graphql.utils import get_context
 from app.routes import webhook_route
 
@@ -23,7 +24,7 @@ app.add_middleware(ApiKeyMidlleware)
 
 app.include_router(webhook_route.router)
 
-schema = strawberry.Schema(query=Query, mutation=Mutation, extensions=[])
+schema = strawberry.Schema(query=Query, mutation=Mutation, extensions=[ValidateExtension])
 
 graphql_app = GraphQLRouter(schema=schema, context_getter=get_context)
 

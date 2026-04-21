@@ -16,7 +16,10 @@ from app.graphql.permissions import (
 from app.graphql.utils import build_response
 
 # Inputs
-from app.graphql.inputs import PaginationInput
+from app.graphql.inputs import (
+    PaginationInput,
+    FilterByInput,
+)
 
 # Types
 from app.graphql.types import (
@@ -45,11 +48,15 @@ from app.exceptions import (
 class AdminQuery:
 
     @strawberry.field(permission_classes=[ApiKeyPermission, SessionPermission, RolePermission])
-    async def listUsers(self, schema: PaginationInput) -> ApiResponseType[UserListType, ApiErrorType]:
+    async def listUsers(self, pagination: PaginationInput, filter_by: FilterByInput = None) -> ApiResponseType[UserListType, ApiErrorType]:
         try:
             user_repo = UserRepository()
-            schema = schema.to_pydantic()
-            data = await user_repo.list_users(pagination=schema)
+            pagination = pagination.to_pydantic()
+            filter_by = filter_by.to_pydantic() if filter_by else None
+            data = await user_repo.list_users(
+                filter_by=filter_by, 
+                pagination=pagination
+            )
             return build_response(
                 success=True,
                 data=data

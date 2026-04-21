@@ -77,7 +77,6 @@ class RolePermissions(Enum):
 
     def has_permissions(self, permission: Permissions) -> bool:
         permission = Permissions(permission)
-        
         return permission in self.value
 
 class Roles(Enum):

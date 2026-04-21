@@ -1,0 +1,1 @@
+from app.graphql.extensions.validate_extension import ValidateExtension
