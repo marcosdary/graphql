@@ -1,0 +1,110 @@
+import strawberry
+
+# Inputs
+from app.graphql.inputs import (
+    UserPrivateInput,
+    UserUpdatePrivateInput
+)
+
+# Types
+from app.graphql.types import (
+    ApiErrorType, 
+    ApiResponseType,
+    UserPrivateType,
+)
+
+# Repositories
+from app.repositories import UserRepository
+
+# Responses
+from app.graphql.utils import build_response
+
+# Permissions
+from app.graphql.permissions import (
+    SessionPermission, 
+    RolePermission,
+    ApiKeyPermission
+)
+
+# Exceptions
+from app.exceptions import (
+    ApiError,
+    DuplicateReviewError,
+    EntityValidationError,
+    ExpirationError,
+    ForbiddenActionError,
+    InvalidCredentialsException,
+    InvalidFieldsException,
+    NotFoundError,
+    ProtectedRouteError,
+    SessionError,
+    TooManyRequestsError,
+    UnknownError,
+    UnprocessableEntity,
+)
+
+
+@strawberry.type
+class AdminUserMutation:
+    
+
+    @strawberry.mutation(permission_classes=[ApiKeyPermission, SessionPermission, RolePermission])
+    async def create(self, schema: UserPrivateInput) -> ApiResponseType[UserPrivateType, ApiErrorType]:
+        try:
+            user = schema.to_pydantic()
+            
+            user_repo = UserRepository()
+            data = await user_repo.create_user(user)
+            
+            return build_response(
+                success=True,
+                data=data
+            )
+        
+        except (
+            ApiError, DuplicateReviewError, EntityValidationError, ExpirationError,
+            ForbiddenActionError, InvalidCredentialsException, InvalidFieldsException,
+            NotFoundError, ProtectedRouteError, SessionError, TooManyRequestsError,
+            UnprocessableEntity,
+        ) as exc:
+            return build_response(False, exc=exc)
+        except Exception:
+            return build_response(False, exc=UnknownError("Erro interno do servidor."))
+        
+    @strawberry.mutation(permission_classes=[ApiKeyPermission, SessionPermission, RolePermission])
+    async def update(self, schema: UserUpdatePrivateInput) -> ApiResponseType[UserPrivateType, ApiErrorType]:  
+        try:
+            user_update = schema.to_pydantic()
+            user_repo = UserRepository()
+            data = await user_repo.update_user(user_update)
+            return build_response(
+                success=True,
+                data=data
+            )
+        except (
+            ApiError, DuplicateReviewError, EntityValidationError, ExpirationError,
+            ForbiddenActionError, InvalidCredentialsException, InvalidFieldsException,
+            NotFoundError, ProtectedRouteError, SessionError, TooManyRequestsError,
+            UnprocessableEntity,
+        ) as exc:
+            return build_response(False, exc=exc)
+        except Exception:
+            return build_response(False, exc=UnknownError("Erro interno do servidor."))
+
+    @strawberry.mutation(permission_classes=[ApiKeyPermission, SessionPermission, RolePermission])
+    async def delete(self, userId: str) -> ApiResponseType[bool, ApiErrorType]:
+        try:
+            user_repo = UserRepository()
+            await user_repo.delete_user(userId)
+            return build_response(True)
+        except (
+            ApiError, DuplicateReviewError, EntityValidationError, ExpirationError,
+            ForbiddenActionError, InvalidCredentialsException, InvalidFieldsException,
+            NotFoundError, ProtectedRouteError, SessionError, TooManyRequestsError,
+            UnprocessableEntity,
+        ) as exc:
+            return build_response(False, exc=exc)
+        except Exception:
+            return build_response(False, exc=UnknownError("Erro interno do servidor."))
+    
+ 

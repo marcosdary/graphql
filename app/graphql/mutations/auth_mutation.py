@@ -12,22 +12,19 @@ from app.dto.user import UserUpdateModel
 # Inputs
 from app.graphql.inputs import (
     UserInput,
-    UserUpdatePublicInput,
     UserLoginInput,
     Verify2FAInput,
     ForgotPasswordInput,
     UserResetPasswordInput
 )
 
-# Responses
-from app.graphql.utils import build_response, create_session
-
 # Permissions
 from app.graphql.permissions import (
-    SessionPermission, 
     ApiKeyPermission,
-    RolePermission
 )
+
+# Responses
+from app.graphql.utils import build_response, create_session
 
 # Types
 from app.graphql.types import (
@@ -39,8 +36,11 @@ from app.graphql.types import (
     ApiResponseType
 )
 
+
 # Services
 from app.services import token
+
+# Exceptions
 from app.exceptions import (
     ApiError,
     DuplicateReviewError,
@@ -58,10 +58,10 @@ from app.exceptions import (
 )
 
 @strawberry.type
-class UserMutation:
+class AuthMutation:
 
     @strawberry.mutation(permission_classes=[ApiKeyPermission])
-    async def create(self, schema: UserInput) -> ApiResponseType[UserPublicType, ApiErrorType]:
+    async def register(self, schema: UserInput) -> ApiResponseType[UserPublicType, ApiErrorType]:
         try:
             user = schema.to_pydantic()
             user_repo = UserRepository()
@@ -82,7 +82,6 @@ class UserMutation:
             return build_response(False, exc=exc)
         except Exception:
             return build_response(False, exc=UnknownError("Erro interno do servidor."))
-
 
     @strawberry.mutation
     async def login(self, schema: UserLoginInput) -> ApiResponseType[TwoFactorAuthType, ApiErrorType]:
@@ -112,6 +111,7 @@ class UserMutation:
         except Exception:
             return build_response(False, exc=UnknownError("Erro interno do servidor."))
     
+
     @strawberry.mutation
     async def verifyTwoFactor(self, schema: Verify2FAInput) -> ApiResponseType[SessionType, ApiErrorType]:
         try:
@@ -133,6 +133,7 @@ class UserMutation:
             return build_response(False, exc=exc)
         except Exception:
             return build_response(False, exc=UnknownError("Erro interno do servidor."))
+
 
     @strawberry.mutation
     async def forgotPassword(self, schema: ForgotPasswordInput) -> ApiResponseType[PasswordResetType, ApiErrorType]:
@@ -161,6 +162,7 @@ class UserMutation:
             return build_response(False, exc=exc)
         except Exception:
             return build_response(False, exc=UnknownError("Erro interno do servidor."))
+
 
     @strawberry.mutation
     async def resetPassword(self, schema: UserResetPasswordInput) -> ApiResponseType[UserPublicType, ApiErrorType]:
@@ -194,43 +196,4 @@ class UserMutation:
         except Exception as exc:
             return build_response(False, exc=UnknownError(f"Erro interno do servidor"))
           
-    @strawberry.mutation(permission_classes=[ApiKeyPermission, SessionPermission])
-    async def update(self, info, schema: UserUpdatePublicInput) -> ApiResponseType[UserPublicType, ApiErrorType]:  
-        try:
-            user = info.context["user"]
-
-            payload = schema.to_pydantic()
-            user_update = payload.model_copy(update={"userId": user["userId"]})
-            
-            user_repo = UserRepository()
-
-            return build_response(
-                success=True,
-                data=await user_repo.update_user(user_update)
-            )
-        except (
-            ApiError, DuplicateReviewError, EntityValidationError, ExpirationError,
-            ForbiddenActionError, InvalidCredentialsException, InvalidFieldsException,
-            NotFoundError, ProtectedRouteError, SessionError, TooManyRequestsError,
-            UnprocessableEntity,
-        ) as exc:
-            return build_response(False, exc=exc)
-        except Exception:
-            return build_response(False, exc=UnknownError("Erro interno do servidor."))
         
-    @strawberry.mutation(permission_classes=[ApiKeyPermission, SessionPermission])
-    async def delete(self, info) -> ApiResponseType[bool, ApiErrorType]:
-        try:
-            user = info.context["user"]
-            user_repo = UserRepository()
-            await user_repo.delete_user(user["userId"])
-            return build_response(True)
-        except (
-            ApiError, DuplicateReviewError, EntityValidationError, ExpirationError,
-            ForbiddenActionError, InvalidCredentialsException, InvalidFieldsException,
-            NotFoundError, ProtectedRouteError, SessionError, TooManyRequestsError,
-            UnprocessableEntity,
-        ) as exc:
-            return build_response(False, exc=exc)
-        except Exception:
-            return build_response(False, exc=UnknownError("Erro interno do servidor."))

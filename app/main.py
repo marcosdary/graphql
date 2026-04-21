@@ -1,6 +1,7 @@
-import logging
 from fastapi import FastAPI
 import strawberry
+from datetime import datetime, timezone
+from strawberry.schema.config import StrawberryConfig
 from strawberry.fastapi import GraphQLRouter
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -24,7 +25,22 @@ app.add_middleware(ApiKeyMidlleware)
 
 app.include_router(webhook_route.router)
 
-schema = strawberry.Schema(query=Query, mutation=Mutation, extensions=[ValidateExtension])
+schema = strawberry.Schema(
+    query=Query, 
+    mutation=Mutation, 
+    extensions=[ValidateExtension],
+    config=StrawberryConfig(
+        scalar_map={
+            datetime: strawberry.scalar(
+                name="DateTime",
+                serialize=lambda value: int(value.timestamp()),
+                parse_value=lambda value: datetime.fromisoformat(
+                    int(value), timezone.utc
+                )
+            )
+        }
+    )
+)
 
 graphql_app = GraphQLRouter(schema=schema, context_getter=get_context)
 

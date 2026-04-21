@@ -35,10 +35,10 @@ from app.exceptions import (
 )
 
 @strawberry.type
-class UserQuery:
+class AccountQuery:
         
     @strawberry.field(permission_classes=[ApiKeyPermission, SessionPermission])
-    async def getUser(self, info) -> ApiResponseType[UserPublicType, ApiErrorType]:
+    async def me(self, info) -> ApiResponseType[UserPublicType, ApiErrorType]:
         try:
             user = info.context["user"]
             user_repo = UserRepository()

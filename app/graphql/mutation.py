@@ -1,12 +1,23 @@
 import strawberry
 
 from app.graphql.mutations import (
-    UserMutation, 
-    AdminMutation
+    AccountMutation, 
+    AdminMutation,
+    AuthMutation
 )
 
 @strawberry.type
-class Mutation(UserMutation, AdminMutation):
-    pass
+class Mutation:
+    
+    @strawberry.field
+    def admin(self) -> AdminMutation: 
+        return AdminMutation()
 
+    @strawberry.field
+    def user(self) -> AccountMutation: 
+        return AccountMutation()
+    
+    @strawberry.field
+    def auth(self) -> AuthMutation:
+        return AuthMutation()
 

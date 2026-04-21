@@ -25,7 +25,7 @@ def build_response(success: bool, data=None, exc: Exception | None = None) -> Ap
         return ApiResponseType(
             success=True, 
             data=data, 
-            timestamp=datetime.now().timestamp()
+            timestamp=datetime.now()
         )
 
     # Caso de erro
@@ -36,7 +36,7 @@ def build_response(success: bool, data=None, exc: Exception | None = None) -> Ap
             errorName=str(exc) if exc else "",
             statusCode=getattr(exc, "status_code", 500),
         ),
-        timestamp=datetime.now().timestamp()
+        timestamp=datetime.now()
     )
 
 
