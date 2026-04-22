@@ -1,14 +1,12 @@
 from strawberry.permission import BasePermission
 from strawberry.exceptions import StrawberryGraphQLError
 
-from app.constants import RolePermissions
+from app.constants import Roles
 from app.exceptions import ProtectedRouteError
 
-async def check_roles(role: str, field_name: str) -> None:
-
-    verify_field = getattr(RolePermissions, role)
+async def check_roles(role: str) -> None:
     
-    if not verify_field.has_permissions(field_name):
+    if Roles.USER.value == role:
         raise ProtectedRouteError("Forneça as credenciais corretas para acessar as informações.")
     
     return 
@@ -23,7 +21,7 @@ class RolePermission(BasePermission):
             context: dict = info.context["user"]
             *_, role = context.values()
     
-            await check_roles(role, field_name=field_name)
+            await check_roles(role)
         
             return True
         except Exception as exc:

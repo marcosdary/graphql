@@ -1,11 +1,10 @@
 import strawberry
+from strawberry.field_extensions import InputMutationExtension
 
-from typing import Optional, Annotated
+from typing import Optional
 
 # Repository
 from app.repositories.user_repository import UserRepository
-
-from app.services.cache import UserCacheService
 
 # Permissions
 from app.graphql.permissions import (
@@ -49,7 +48,7 @@ from app.exceptions import (
 @strawberry.type
 class AdminUserQuery:
 
-    @strawberry.field(permission_classes=[ApiKeyPermission, SessionPermission])
+    @strawberry.field(permission_classes=[ApiKeyPermission, SessionPermission, RolePermission], extensions=[InputMutationExtension()])
     async def list(
         self, 
         pagination: PaginationInput, 
@@ -78,7 +77,7 @@ class AdminUserQuery:
             print(exc)
             return build_response(False, exc=UnknownError("Erro interno do servidor."))
         
-    @strawberry.field(permission_classes=[ApiKeyPermission, SessionPermission])
+    @strawberry.field(permission_classes=[ApiKeyPermission, SessionPermission, RolePermission])
     async def getById(self, userId: str) -> ApiResponseType[UserPrivateType, ApiErrorType]:
         try:
             user_repo = UserRepository()
