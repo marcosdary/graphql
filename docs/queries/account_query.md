@@ -84,7 +84,7 @@ Todas as operações deste projeto retornam um `ApiResponseType[Sucesso, ApiErro
 ```json
 {
     "data": {
-        "auth": {
+        "user": {
             "me": {
                 "success": false,
                 "data": null,
