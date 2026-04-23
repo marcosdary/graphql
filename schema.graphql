@@ -155,27 +155,69 @@ input ApiKeyInput {
     expiration: ExpirationApiKey
 }
 
-union Data = UserPublicType | UserPrivateType | ApiKeyType | SessionType | TwoFactorAuthType | UserListType | Boolean
-
-type Mutation {
-    create(schema: UserInput): ApiErrorType!
-    login(schema: UserLoginInput!): ApiResponseType!
-    update(schema: UserUpdatePublicInput): ApiResponseType!
-    verifyTwoFactor (schema: Verify2FAInput): ApiResponseType!
-    delete: ApiResponseType!
-    forgotPassword(schema: ForgotPasswordInput): ApiResponseType!
-    resetPassword(schema: UserResetPasswordInput): ApiResponseType!
-    createApiKey(schema: ApiKeyInput!): ApiResponseType!
-    createUserByAdmin(schema: UserPrivateInput!): ApiResponseType!
-    updateUserByAdmin(schema: UserUpdatePrivateInput!): ApiResponseType!
-    deleteUserByAdmin(userId: String!): ApiResponseType!
-    deleteApiKey(key: String!): ApiResponseType!
+input ListInput {
+    pagination: PaginationInput!
+    filterBy: FilterByInput
 }
 
+union Data = UserPublicType | UserPrivateType | ApiKeyType | SessionType | TwoFactorAuthType | UserListType | Boolean
+
+
+# Mutations 
+type AdminApiKeyMutation {
+    create(schema: ApiKeyInput!): ApiResponseType!
+    delete(key: String!): ApiResponseType!
+}
+
+type AccountMutation {
+    updateProfile(schema: UserUpdatePublicInput): ApiResponseType!
+    deleteAccount: ApiResponseType!
+}
+
+type AuthMutation {
+    register(schema: UserInput): ApiErrorType!
+    login(schema: UserLoginInput!): ApiResponseType!
+    verifyTwoFactor (schema: Verify2FAInput): ApiResponseType!
+    forgotPassword(schema: ForgotPasswordInput): ApiResponseType!
+    resetPassword(schema: UserResetPasswordInput): ApiResponseType!
+}
+
+type AdminUserMutation {
+    create(schema: UserPrivateInput!): ApiResponseType!
+    update(schema: UserUpdatePrivateInput!): ApiResponseType!
+    delete(userId: String!): ApiResponseType!
+}
+
+type AdminMutation {
+    users: AdminUserMutation
+    apiKey: AdminApiKeyMutation
+}
+
+# Base Mutation
+type Mutation {
+    admin: AdminMutation 
+    user: AccountMutation
+    auth: AuthMutation
+}
+
+# Queries
+type AccountQuery {
+    me: ApiResponseType!
+}
+
+type AdminUserQuery {
+    list(input: ListInput): ApiResponseType!
+    getById(userId: String!): ApiResponseType!
+}
+
+type AdminQuery {
+    users: AdminUserQuery
+}
+
+# Base Query
 type Query {
-    listUsers(pagination: PaginationInput!, filter_by: FilterByInput): ApiResponseType!
-    getByIdUser(userId: String!): ApiResponseType!
-    getUser: ApiResponseType!
+    account: AccountQuery
+    admin: AdminQuery
 }
 
 
