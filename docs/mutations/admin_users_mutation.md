@@ -487,22 +487,26 @@ Todas as operacoes deste projeto retornam um `ApiResponseType[Sucesso, ApiErrorT
 
 ```json
 {
-  "data": {
-    "admin": {
-      "users": {
-        "delete": {
-          "success": false,
-          "data": null,
-          "error": {
-            "typeError": "ForbiddenActionError",
-            "errorName": "Acao nao permitida. Nao pode apagar o ADMIN. Por favor, entre em contato com o suporte",
-            "statusCode": 403
-          },
-          "timestamp": "2026-04-23T12:20:00"
+    "data": null,
+    "errors": [
+        {
+            "message": "Mensagem de erro",
+            "locations": [
+                {
+                    "line": 3,
+                    "column": 9
+                }
+            ],
+            "path": [
+                "auth",
+                "login"
+            ],
+            "extensions": {
+                "typeError": "NomeDaExcecao",
+                "statusCode": 401
+            }
         }
-      }
-    }
-  }
+    ]
 }
 ```
 
@@ -510,17 +514,14 @@ Todas as operacoes deste projeto retornam um `ApiResponseType[Sucesso, ApiErrorT
 
 | Campo | Tipo | Sempre presente | Descricao |
 | --- | --- | --- | --- |
-| `success` | `bool` | Sim | Indica se a operacao foi concluida com sucesso |
 | `data` | `bool \| null` | Sim | O metodo tipa `bool`, mas `build_response(True)` retorna sem payload explicito em caso de sucesso |
-| `error` | `ApiErrorType \| null` | Sim | Payload de erro quando `success=false` |
-| `timestamp` | `datetime` | Sim | Data e hora em que `build_response` montou a resposta |
 
-#### Estrutura de `error`
+#### Estrutura de `errors`
 
 | Campo | Tipo | Descricao |
 | --- | --- | --- |
 | `typeError` | `string` | Nome da classe da excecao |
-| `errorName` | `string` | Mensagem retornada pela excecao |
+| `message` | `string` | Mensagem retornada pela excecao |
 | `statusCode` | `int` | Codigo HTTP/logico associado ao erro |
 
 #### Regras de negocio

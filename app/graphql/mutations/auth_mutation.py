@@ -1,4 +1,5 @@
 import strawberry
+from strawberry.exceptions import StrawberryGraphQLError
 
 # Repository
 from app.repositories.user_repository import UserRepository
@@ -24,71 +25,43 @@ from app.graphql.permissions import (
 )
 
 # Responses
-from app.graphql.utils import build_response, create_session
+from app.graphql.utils import build_extensions, create_session
 
 # Types
-from app.graphql.types import (
-    UserPublicType, 
-    SessionType, 
-    TwoFactorAuthType, 
-    PasswordResetType, 
-    ApiErrorType,
-    ApiResponseType
-)
+from app.graphql.types.two_factor_auth_type import TwoFactorAuthType
+from app.graphql.types.password_reset_type import PasswordResetType
+from app.graphql.types.user_type import UserPublicType
+from app.graphql.types.session_type import SessionType
 
 
 # Services
 from app.services import token
 
-# Exceptions
-from app.exceptions import (
-    ApiError,
-    DuplicateReviewError,
-    EntityValidationError,
-    ExpirationError,
-    ForbiddenActionError,
-    InvalidCredentialsException,
-    InvalidFieldsException,
-    NotFoundError,
-    ProtectedRouteError,
-    SessionError,
-    TooManyRequestsError,
-    UnknownError,
-    UnprocessableEntity,
-)
-
 @strawberry.type
 class AuthMutation:
 
     @strawberry.mutation(permission_classes=[ApiKeyPermission])
-    async def register(self, schema: UserInput) -> ApiResponseType[UserPublicType, ApiErrorType]:
+    async def register(self, info: strawberry.Info, schema: UserInput) -> UserPublicType:
         try:
             user = schema.to_pydantic()
             user_repo = UserRepository()
             
             data = await user_repo.create_user(user)
-           
-            return build_response(
-                success=True,
-                data=data
-            )
+
+            response = info.context["response"]
+            response.headers["Last-Modified"] = data.createdAt.strftime("%a, %d %b %Y %H:%M:%S GMT")
+            return data
         
-        except (
-            ApiError, DuplicateReviewError, EntityValidationError, ExpirationError,
-            ForbiddenActionError, InvalidCredentialsException, InvalidFieldsException,
-            NotFoundError, ProtectedRouteError, SessionError, TooManyRequestsError,
-            UnprocessableEntity,
-        ) as exc:
-            return build_response(False, exc=exc)
-        except Exception:
-            return build_response(False, exc=UnknownError("Erro interno do servidor."))
+        except Exception as exc:
+            raise StrawberryGraphQLError(
+                message=str(exc),
+                extensions=build_extensions(exc)
+            )
 
     @strawberry.mutation
-    async def login(self, schema: UserLoginInput) -> ApiResponseType[TwoFactorAuthType, ApiErrorType]:
+    async def login(self, info: strawberry.Info, schema: UserLoginInput) -> TwoFactorAuthType:
         try:
-           
             user = schema.to_pydantic()
-
             user_repo = UserRepository()
             data = await user_repo.get_user_by_email_and_password(user)
            
@@ -98,22 +71,22 @@ class AuthMutation:
                 userId=data.userId,
                 role=data.role
             )
+
+            response = info.context["response"]
+
+            response.headers["X-2FA-Required"] = "true"
+            response.headers["X-2FA-Expires-At"] = create.expiresAt.strftime("%a, %d %b %Y %H:%M:%S GMT")
+            return create
         
-            return build_response(True, data=create)
-        
-        except (
-            ApiError, DuplicateReviewError, EntityValidationError, ExpirationError,
-            ForbiddenActionError, InvalidCredentialsException, InvalidFieldsException,
-            NotFoundError, ProtectedRouteError, SessionError, TooManyRequestsError,
-            UnprocessableEntity,
-        ) as exc:
-            return build_response(False, exc=exc)
-        except Exception:
-            return build_response(False, exc=UnknownError("Erro interno do servidor."))
+        except Exception as exc:
+            raise StrawberryGraphQLError(
+                message=str(exc),
+                extensions=build_extensions(exc)
+            )
     
 
     @strawberry.mutation
-    async def verifyTwoFactor(self, schema: Verify2FAInput) -> ApiResponseType[SessionType, ApiErrorType]:
+    async def verifyTwoFactor(self, info: strawberry.Info, schema: Verify2FAInput) -> SessionType:
         try:
             two_fa = schema.to_pydantic()
             two_factor_auth_service = token.TwoFactorAuthService()
@@ -122,21 +95,21 @@ class AuthMutation:
                 userId=data.get("userId"), 
                 role=data.get("role")
             )
-            return build_response(True, data=session_new)
-        
-        except (
-            ApiError, DuplicateReviewError, EntityValidationError, ExpirationError,
-            ForbiddenActionError, InvalidCredentialsException, InvalidFieldsException,
-            NotFoundError, ProtectedRouteError, SessionError, TooManyRequestsError,
-            UnprocessableEntity,
-        ) as exc:
-            return build_response(False, exc=exc)
-        except Exception:
-            return build_response(False, exc=UnknownError("Erro interno do servidor."))
+            
+            response = info.context["response"]
+            response.headers["X-Auth-Status"] = "authenticated"
+            response.headers["X-Session-Expires-At"] = session_new.expiresAt.strftime("%a, %d %b %Y %H:%M:%S GMT")
+            return session_new
+    
+        except Exception as exc:
+            raise StrawberryGraphQLError(
+                message=str(exc),
+                extensions=build_extensions(exc)
+            )
 
 
     @strawberry.mutation
-    async def forgotPassword(self, schema: ForgotPasswordInput) -> ApiResponseType[PasswordResetType, ApiErrorType]:
+    async def forgotPassword(self, schema: ForgotPasswordInput) -> PasswordResetType:
         try:
             schema = schema.to_pydantic()
 
@@ -152,20 +125,17 @@ class AuthMutation:
                 }
             )
             
-            return build_response(True, data=forgot)
-        except (
-            ApiError, DuplicateReviewError, EntityValidationError, ExpirationError,
-            ForbiddenActionError, InvalidCredentialsException, InvalidFieldsException,
-            NotFoundError, ProtectedRouteError, SessionError, TooManyRequestsError,
-            UnprocessableEntity,
-        ) as exc:
-            return build_response(False, exc=exc)
-        except Exception:
-            return build_response(False, exc=UnknownError("Erro interno do servidor."))
+            return forgot
+        
+        except Exception as exc:
+            raise StrawberryGraphQLError(
+                message=str(exc),
+                extensions=build_extensions(exc)
+            )
 
 
     @strawberry.mutation
-    async def resetPassword(self, schema: UserResetPasswordInput) -> ApiResponseType[UserPublicType, ApiErrorType]:
+    async def resetPassword(self, schema: UserResetPasswordInput) -> UserPublicType:
         try:
             data_pydantic = schema.to_pydantic()
             password_reset_service = token.PasswordResetService()
@@ -184,16 +154,11 @@ class AuthMutation:
                 )
             )
             
-            return build_response(True, data=data)
+            return data
         
-        except (
-            ApiError, DuplicateReviewError, EntityValidationError, ExpirationError,
-            ForbiddenActionError, InvalidCredentialsException, InvalidFieldsException,
-            NotFoundError, ProtectedRouteError, SessionError, TooManyRequestsError,
-            UnprocessableEntity,
-        ) as exc:
-            return build_response(False, exc=exc)
         except Exception as exc:
-            return build_response(False, exc=UnknownError(f"Erro interno do servidor"))
-          
+            raise StrawberryGraphQLError(
+                message=str(exc),
+                extensions=build_extensions(exc)
+            )
         

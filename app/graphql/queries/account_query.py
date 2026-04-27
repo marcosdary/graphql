@@ -1,4 +1,5 @@
 import strawberry
+from strawberry.exceptions import StrawberryGraphQLError
 
 # Repository
 from app.repositories.user_repository import UserRepository
@@ -10,53 +11,29 @@ from app.graphql.permissions import (
 )
 
 # Responses
-from app.graphql.utils import build_response
+from app.graphql.utils import build_extensions
 
 # Types
-from app.graphql.types import (
-    UserPublicType, 
-    ApiErrorType,
-    ApiResponseType
-)
-from app.exceptions import (
-    ApiError,
-    DuplicateReviewError,
-    EntityValidationError,
-    ExpirationError,
-    ForbiddenActionError,
-    InvalidCredentialsException,
-    InvalidFieldsException,
-    NotFoundError,
-    ProtectedRouteError,
-    SessionError,
-    TooManyRequestsError,
-    UnknownError,
-    UnprocessableEntity,
-)
+from app.graphql.types.user_type import UserPublicType
 
 @strawberry.type
 class AccountQuery:
         
     @strawberry.field(permission_classes=[ApiKeyPermission, SessionPermission])
-    async def me(self, info) -> ApiResponseType[UserPublicType, ApiErrorType]:
+    async def me(self, info) -> UserPublicType:
         try:
             user = info.context["user"]
             user_repo = UserRepository()
 
             data = await user_repo.get_user_by_id(user["userId"])
             
-            return build_response(
-                success=True,
-                data=data
+            return data
+        
+        except Exception as exc:
+             raise StrawberryGraphQLError(
+                message=str(exc),
+                extensions=build_extensions(exc)
             )
-        except (
-            ApiError, DuplicateReviewError, EntityValidationError, ExpirationError,
-            ForbiddenActionError, InvalidCredentialsException, InvalidFieldsException,
-            NotFoundError, ProtectedRouteError, SessionError, TooManyRequestsError,
-            UnprocessableEntity,
-        ) as exc:
-            return build_response(False, exc=exc)
-        except Exception:
-            return build_response(False, exc=UnknownError("Erro interno do servidor."))
+        
     
     

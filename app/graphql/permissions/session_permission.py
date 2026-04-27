@@ -39,8 +39,8 @@ class SessionPermission(BasePermission):
                 await self._session_service.delete_session(session_id)
             
             info.context["user"] = response
-        
             return True
+        
         except Exception as exc:
             raise StrawberryGraphQLError(str(exc), extensions={
                 "typeError": exc.__class__.__name__,

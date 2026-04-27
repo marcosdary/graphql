@@ -75,19 +75,17 @@ type ApiKeyType {
     expiresAt: DateTime
 }
 
-type ApiResponseType {
-    success: Boolean!
-    data: Data
-    error: ApiErrorType
-    timestamp: Float!
-}
-
 type UserListType {
     items: [UserPrivateType]
     total: Int
     page: Int
     limit: Int
     hasNextPage: Boolean
+}
+
+type PasswordResetType {
+    token: String!
+    number: String
 }
 
 
@@ -160,32 +158,30 @@ input ListInput {
     filterBy: FilterByInput
 }
 
-union Data = UserPublicType | UserPrivateType | ApiKeyType | SessionType | TwoFactorAuthType | UserListType | Boolean
-
 
 # Mutations 
 type AdminApiKeyMutation {
-    create(schema: ApiKeyInput!): ApiResponseType!
-    delete(key: String!): ApiResponseType!
+    create(schema: ApiKeyInput!): ApiKeyType!
+    delete(key: String!): ApiKeyType
 }
 
 type AccountMutation {
-    updateProfile(schema: UserUpdatePublicInput): ApiResponseType!
-    deleteAccount: ApiResponseType!
+    updateProfile(schema: UserUpdatePublicInput): UserPublicType!
+    deleteAccount: UserPublicType
 }
 
 type AuthMutation {
-    register(schema: UserInput): ApiErrorType!
-    login(schema: UserLoginInput!): ApiResponseType!
-    verifyTwoFactor (schema: Verify2FAInput): ApiResponseType!
-    forgotPassword(schema: ForgotPasswordInput): ApiResponseType!
-    resetPassword(schema: UserResetPasswordInput): ApiResponseType!
+    register(schema: UserInput): UserPublicType!
+    login(schema: UserLoginInput!): TwoFactorAuthType!
+    verifyTwoFactor (schema: Verify2FAInput): SessionType!
+    forgotPassword(schema: ForgotPasswordInput): PasswordResetType!
+    resetPassword(schema: UserResetPasswordInput): UserPublicType!
 }
 
 type AdminUserMutation {
-    create(schema: UserPrivateInput!): ApiResponseType!
-    update(schema: UserUpdatePrivateInput!): ApiResponseType!
-    delete(userId: String!): ApiResponseType!
+    create(schema: UserPrivateInput!): UserPrivateType!
+    update(schema: UserUpdatePrivateInput!): UserPrivateType!
+    delete(userId: String!): UserPrivateType
 }
 
 type AdminMutation {
@@ -202,12 +198,12 @@ type Mutation {
 
 # Queries
 type AccountQuery {
-    me: ApiResponseType!
+    me: UserPublicType!
 }
 
 type AdminUserQuery {
-    list(input: ListInput): ApiResponseType!
-    getById(userId: String!): ApiResponseType!
+    list(input: ListInput): UserListType!
+    getById(userId: String!): UserPrivateType!
 }
 
 type AdminQuery {

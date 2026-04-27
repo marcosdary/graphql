@@ -1,4 +1,6 @@
 import strawberry
+from typing import Optional
+from strawberry.exceptions import StrawberryGraphQLError
 
 # Inputs
 from app.graphql.inputs import (
@@ -6,74 +8,47 @@ from app.graphql.inputs import (
 )
 
 # Types
-from app.graphql.types import (
-    ApiKeyType, 
-    ApiErrorType, 
-    ApiResponseType,
-)
+from app.graphql.types.api_key_type import ApiKeyType
 
 # Responses
-from app.graphql.utils import build_response
+from app.graphql.utils import build_extensions
 
 # Permissions
 from app.graphql.permissions import (
     SessionPermission, 
-    RolePermission,
-    ApiKeyPermission
+    RolePermission
 )
 
 # Services
 from app.services import token 
-from app.exceptions import (
-    ApiError,
-    DuplicateReviewError,
-    EntityValidationError,
-    ExpirationError,
-    ForbiddenActionError,
-    InvalidCredentialsException,
-    InvalidFieldsException,
-    NotFoundError,
-    ProtectedRouteError,
-    SessionError,
-    TooManyRequestsError,
-    UnknownError,
-    UnprocessableEntity,
-)
-
 
 @strawberry.type
 class AdminApiKeyMutation:
     
-    @strawberry.mutation(permission_classes=[SessionPermission])
-    async def create(self, info, schema: ApiKeyInput) -> ApiResponseType[ApiKeyType, ApiErrorType]:
+    @strawberry.mutation(permission_classes=[SessionPermission, RolePermission])
+    async def create(self, info, schema: ApiKeyInput) -> ApiKeyType:
         try:
             api_key_service = token.ApiKeyService()
             user = info.context["user"]
             data = schema.to_pydantic()
-            generate = await api_key_service.generate_api_key(data.expiration.value, **user)
-            return build_response(True, generate)
-        except (
-            ApiError, DuplicateReviewError, EntityValidationError, ExpirationError,
-            ForbiddenActionError, InvalidCredentialsException, InvalidFieldsException,
-            NotFoundError, ProtectedRouteError, SessionError, TooManyRequestsError,
-            UnprocessableEntity,
-        ) as exc:
-            return build_response(False, exc=exc)
-        except Exception:
-            return build_response(False, exc=UnknownError("Erro interno do servidor."))
+            
+            return await api_key_service.generate_api_key(data.expiration.value, **user)
+        
+        except Exception as exc:
+            raise StrawberryGraphQLError(
+                message=str(exc),
+                extensions=build_extensions(exc)
+            )
     
-    @strawberry.mutation(permission_classes=[SessionPermission])
-    async def delete(self, key: str) -> ApiResponseType[bool, ApiErrorType]:
+    @strawberry.mutation(permission_classes=[SessionPermission, RolePermission])
+    async def delete(self, key: str) -> None:
         try:
             api_key_service = token.ApiKeyService()
             await api_key_service.delete_api_key(token=key)
-            return build_response(True)
-        except (
-            ApiError, DuplicateReviewError, EntityValidationError, ExpirationError,
-            ForbiddenActionError, InvalidCredentialsException, InvalidFieldsException,
-            NotFoundError, ProtectedRouteError, SessionError, TooManyRequestsError,
-            UnprocessableEntity,
-        ) as exc:
-            return build_response(False, exc=exc)
-        except Exception:
-            return build_response(False, exc=UnknownError("Erro interno do servidor."))
+            return await api_key_service.delete_api_key(token=key)
+        
+        except Exception as exc:
+            raise StrawberryGraphQLError(
+                message=str(exc),
+                extensions=build_extensions(exc)
+            )

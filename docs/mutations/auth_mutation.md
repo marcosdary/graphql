@@ -98,20 +98,26 @@ Todas as operações deste projeto retornam um `ApiResponseType[Sucesso, ApiErro
 
 ```json
 {
-    "data": {
-        "auth": {
-            "login": {
-                "success": false,
-                "data": null,
-                "error": {
-                    "errorName": "Mensagem de erro",
-                    "typeError": "NomeDaExcecao",
-                    "statusCode": 401
-                },
-                "timestamp": 0
+    "data": null,
+    "errors": [
+        {
+            "message": "Mensagem de erro",
+            "locations": [
+                {
+                    "line": 3,
+                    "column": 9
+                }
+            ],
+            "path": [
+                "auth",
+                "login"
+            ],
+            "extensions": {
+                "typeError": "NomeDaExcecao",
+                "statusCode": 401
             }
         }
-    }
+    ]
 }
 ```
 
@@ -119,17 +125,15 @@ Todas as operações deste projeto retornam um `ApiResponseType[Sucesso, ApiErro
 
 | Campo | Tipo | Sempre presente | Descrição |
 | --- | --- | --- | --- |
-| `success` | `bool` | Sim | Indica se a operacao foi concluida com sucesso |
 | `data` | `Resultado\| null` | Sim | Payload de sucesso da operação |
-| `error` | `ApiErrorType \| null` | Sim | Payload de erro quando `success=false` |
-| `timestamp` | `datetime` | Sim | Data e hora em que `build_response` montou a resposta |
+
 
 #### Estrutura de `error`
 
 | Campo | Tipo | Descricao |
 | --- | --- | --- |
 | `typeError` | `string` | Nome da classe da excecao |
-| `errorName` | `string` | Mensagem retornada pela excecao |
+| `message` | `string` | Mensagem retornada pela excecao |
 | `statusCode` | `int` | Codigo HTTP/logico associado ao erro |
 
 
@@ -219,20 +223,26 @@ Todas as operações deste projeto retornam um `ApiResponseType[Sucesso, ApiErro
 
 ```json
 {
-    "data": {
-        "auth": {
-            "register": {
-                "success": false,
-                "data": null,
-                "error": {
-                    "errorName": "Mensagem de erro",
-                    "typeError": "NomeDaExcecao",
-                    "statusCode": 401
-                },
-                "timestamp": 0
+    "data": null,
+    "errors": [
+        {
+            "message": "Mensagem de erro",
+            "locations": [
+                {
+                    "line": 3,
+                    "column": 9
+                }
+            ],
+            "path": [
+                "auth",
+                "login"
+            ],
+            "extensions": {
+                "typeError": "NomeDaExcecao",
+                "statusCode": 401
             }
         }
-    }
+    ]
 }
 ```
 
@@ -240,17 +250,14 @@ Todas as operações deste projeto retornam um `ApiResponseType[Sucesso, ApiErro
 
 | Campo | Tipo | Sempre presente | Descrição |
 | --- | --- | --- | --- |
-| `success` | `bool` | Sim | Indica se a operacao foi concluida com sucesso |
 | `data` | `Resultado\| null` | Sim | Payload de sucesso da operação |
-| `error` | `ApiErrorType \| null` | Sim | Payload de erro quando `success=false` |
-| `timestamp` | `datetime` | Sim | Data e hora em que `build_response` montou a resposta |
 
-#### Estrutura de `error`
+#### Estrutura de `errors`
 
 | Campo | Tipo | Descricao |
 | --- | --- | --- |
 | `typeError` | `string` | Nome da classe da excecao |
-| `errorName` | `string` | Mensagem retornada pela excecao |
+| `message` | `string` | Mensagem retornada pela excecao |
 | `statusCode` | `int` | Codigo HTTP/logico associado ao erro |
 
 
@@ -275,12 +282,11 @@ Objetivo da verifyTwoFactor é autenticar o usuário no sistema, para que tenha 
 mutation Verify2FASchema($schema: Verify2FAInput!){
     auth {
         verifyTwoFactor (schema: $schema) {
-            success 
-            data { sessionId createdAt expiresAt }
-            error { errorName typeError statusCode }
+            sessionId 
+            createdAt 
+            expiresAt 
         }
     }
-
 }
 ```
 #### Variáveis
@@ -322,14 +328,10 @@ Todas as operações deste projeto retornam um `ApiResponseType[Sucesso, ApiErro
 {
     "data": {
         "auth": {
-            "verifyTwoFactor": {
-                "success": true,
-                "data": {
-                    "sessionId": "eyJhbGciOiJIUzI1NiI...",
-                    "createdAt": 1776943527.151267,
-                    "expiresAt": 1776954327.151267
-                },
-                "error": null
+            "verifyTwoFactor": {        
+                "sessionId": "eyJhbGciOiJIUzI1NiI...",
+                "createdAt": 1776943527.151267,
+                "expiresAt": 1776954327.151267     
             }
         }
     }
@@ -340,20 +342,26 @@ Todas as operações deste projeto retornam um `ApiResponseType[Sucesso, ApiErro
 
 ```json
 {
-    "data": {
-        "auth": {
-            "verifyTwoFactor": {
-                "success": false,
-                "data": null,
-                "error": {
-                    "errorName": "Mensagem de erro",
-                    "typeError": "NomeDaExcecao",
-                    "statusCode": 401
-                },
-                "timestamp": 0
+    "data": null,
+    "errors": [
+        {
+            "message": "Mensagem de erro",
+            "locations": [
+                {
+                    "line": 3,
+                    "column": 9
+                }
+            ],
+            "path": [
+                "auth",
+                "login"
+            ],
+            "extensions": {
+                "typeError": "NomeDaExcecao",
+                "statusCode": 401
             }
         }
-    }
+    ]
 }
 ```
 
@@ -361,17 +369,14 @@ Todas as operações deste projeto retornam um `ApiResponseType[Sucesso, ApiErro
 
 | Campo | Tipo | Sempre presente | Descrição |
 | --- | --- | --- | --- |
-| `success` | `bool` | Sim | Indica se a operacao foi concluida com sucesso |
 | `data` | `Resultado\| null` | Sim | Payload de sucesso da operação |
-| `error` | `ApiErrorType \| null` | Sim | Payload de erro quando `success=false` |
-| `timestamp` | `datetime` | Sim | Data e hora em que `build_response` montou a resposta |
 
-#### Estrutura de `error`
+#### Estrutura de `errors`
 
 | Campo | Tipo | Descricao |
 | --- | --- | --- |
 | `typeError` | `string` | Nome da classe da excecao |
-| `errorName` | `string` | Mensagem retornada pela excecao |
+| `message` | `string` | Mensagem retornada pela excecao |
 | `statusCode` | `int` | Codigo HTTP/logico associado ao erro |
 
 
@@ -395,13 +400,9 @@ Objetivo da forgotPassword é verificar a existência do usuário no sistema, pa
 ```graphql
 mutation ForgotPasswordSchema($schema: ForgotPasswordInput!) {
     auth {
-        forgotPassword(schema: $schema) {
-            success
-            data {
-                token
-                expiresAt
-            }
-            error { errorName typeError statusCode }
+        forgotPassword(schema: $schema) {   
+            token
+            expiresAt          
         }
     }
 }
@@ -443,12 +444,8 @@ Todas as operações deste projeto retornam um `ApiResponseType[Sucesso, ApiErro
     "data": {
         "auth": {
             "forgotPassword": {
-                "success": true,
-                "data": {
-                    "token": "eyJhbGciOiJIUzI1NiI...",
-                    "expiresAt": 1776944908.912749
-                },
-                "error": null
+                "token": "eyJhbGciOiJIUzI1NiI...",
+                "expiresAt": 1776944908.912749
             }
         }
     }
@@ -459,20 +456,26 @@ Todas as operações deste projeto retornam um `ApiResponseType[Sucesso, ApiErro
 
 ```json
 {
-    "data": {
-        "auth": {
-            "forgotPassword": {
-                "success": false,
-                "data": null,
-                "error": {
-                    "errorName": "Mensagem de erro",
-                    "typeError": "NomeDaExcecao",
-                    "statusCode": 401
-                },
-                "timestamp": 0
+    "data": null,
+    "errors": [
+        {
+            "message": "Mensagem de erro",
+            "locations": [
+                {
+                    "line": 3,
+                    "column": 9
+                }
+            ],
+            "path": [
+                "auth",
+                "login"
+            ],
+            "extensions": {
+                "typeError": "NomeDaExcecao",
+                "statusCode": 401
             }
         }
-    }
+    ]
 }
 ```
 
@@ -480,17 +483,14 @@ Todas as operações deste projeto retornam um `ApiResponseType[Sucesso, ApiErro
 
 | Campo | Tipo | Sempre presente | Descrição |
 | --- | --- | --- | --- |
-| `success` | `bool` | Sim | Indica se a operacao foi concluida com sucesso |
 | `data` | `Resultado\| null` | Sim | Payload de sucesso da operação |
-| `error` | `ApiErrorType \| null` | Sim | Payload de erro quando `success=false` |
-| `timestamp` | `datetime` | Sim | Data e hora em que `build_response` montou a resposta |
 
 #### Estrutura de `error`
 
 | Campo | Tipo | Descricao |
 | --- | --- | --- |
 | `typeError` | `string` | Nome da classe da excecao |
-| `errorName` | `string` | Mensagem retornada pela excecao |
+| `message` | `string` | Mensagem retornada pela excecao |
 | `statusCode` | `int` | Codigo HTTP/logico associado ao erro |
 
 
@@ -512,15 +512,11 @@ Objetivo da resetPassword é renovar a senha do usuário no sistema.
 ```graphql
 mutation ResetPasswordSchema($schema: UserResetPasswordInput!) {
     auth {
-        resetPassword(schema: $schema) {
-            success
-            data {
-                name
-                email
-                createdAt
-                updatedAt  
-            }
-            error { errorName typeError statusCode }
+        resetPassword(schema: $schema) {        
+            name
+            email
+            createdAt
+            updatedAt  
         }
     }
         
@@ -565,14 +561,10 @@ Todas as operações deste projeto retornam um `ApiResponseType[Sucesso, ApiErro
     "data": {
         "auth": {
             "resetPassword": {
-                "success": true,
-                "data": {
-                    "name": "Nome Usuário",
-                    "email": "email@exemplo.com",
-                    "createdAt": 1775228778.306308,
-                    "updatedAt": 1776944662.517973
-                },
-                "error": null
+               "name": "Nome Usuário",
+                "email": "email@exemplo.com",
+                "createdAt": 1775228778.306308,
+                "updatedAt": 1776944662.517973
             }
         }
     }
@@ -583,20 +575,26 @@ Todas as operações deste projeto retornam um `ApiResponseType[Sucesso, ApiErro
 
 ```json
 {
-    "data": {
-        "auth": {
-            "resetPassword": {
-                "success": false,
-                "data": null,
-                "error": {
-                    "errorName": "Mensagem de erro",
-                    "typeError": "NomeDaExcecao",
-                    "statusCode": 401
-                },
-                "timestamp": 0
+    "data": null,
+    "errors": [
+        {
+            "message": "Mensagem de erro",
+            "locations": [
+                {
+                    "line": 3,
+                    "column": 9
+                }
+            ],
+            "path": [
+                "auth",
+                "login"
+            ],
+            "extensions": {
+                "typeError": "NomeDaExcecao",
+                "statusCode": 401
             }
         }
-    }
+    ]
 }
 ```
 
@@ -604,17 +602,14 @@ Todas as operações deste projeto retornam um `ApiResponseType[Sucesso, ApiErro
 
 | Campo | Tipo | Sempre presente | Descrição |
 | --- | --- | --- | --- |
-| `success` | `bool` | Sim | Indica se a operacao foi concluida com sucesso |
 | `data` | `Resultado\| null` | Sim | Payload de sucesso da operação |
-| `error` | `ApiErrorType \| null` | Sim | Payload de erro quando `success=false` |
-| `timestamp` | `datetime` | Sim | Data e hora em que `build_response` montou a resposta |
 
 #### Estrutura de `error`
 
 | Campo | Tipo | Descricao |
 | --- | --- | --- |
 | `typeError` | `string` | Nome da classe da excecao |
-| `errorName` | `string` | Mensagem retornada pela excecao |
+| `message` | `string` | Mensagem retornada pela excecao |
 | `statusCode` | `int` | Codigo HTTP/logico associado ao erro |
 
 

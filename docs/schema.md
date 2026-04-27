@@ -49,33 +49,6 @@ O schema esta organizado em:
 | `NINETY_DAYS` | Expiracao de 90 dias |
 | `ONE_YEAR` | Expiracao de 1 ano |
 
-## Tipos compartilhados
-
-### `ApiErrorType`
-
-Payload padrao de erro retornado nas operacoes.
-
-| Campo | Tipo | Descricao |
-| --- | --- | --- |
-| `errorName` | `String!` | Mensagem legivel do erro |
-| `typeError` | `String!` | Nome da classe da excecao |
-| `statusCode` | `Int` | Codigo HTTP/logico associado ao erro |
-
-### `ApiResponseType`
-
-Envelope padrao das respostas de sucesso e erro.
-
-| Campo | Tipo | Descricao |
-| --- | --- | --- |
-| `success` | `Boolean!` | Indica se a operacao foi concluida com sucesso |
-| `data` | `Data` | Payload principal; usa a union `Data` |
-| `error` | `ApiErrorType` | Dados do erro quando `success=false` |
-| `timestamp` | `Float!` | Momento em que a resposta foi montada |
-
-Observacao:
-
-- O schema publicado usa `timestamp: Float!`, mas a implementacao Python monta esse valor a partir de `datetime.now()` em `build_response`.
-
 ## Types de dominio
 
 ### `UserPublicType`
@@ -224,22 +197,6 @@ Observacao:
 | --- | --- | --- | --- |
 | `pagination` | `PaginationInput!` | Sim | Configuracao de paginacao |
 | `filterBy` | `FilterByInput` | Nao | Filtros de busca |
-
-## Union `Data`
-
-`ApiResponseType.data` pode retornar um dos seguintes tipos:
-
-- `UserPublicType`
-- `UserPrivateType`
-- `ApiKeyType`
-- `SessionType`
-- `TwoFactorAuthType`
-- `UserListType`
-- `Boolean`
-
-Observacao:
-
-- Algumas operacoes tipadas em Python retornam `None` em sucesso mesmo quando a intencao semantica do SDL sugere `Boolean`, como em exclusoes com `build_response(True)` sem payload explicito.
 
 ## Ponto de entrada de queries
 

@@ -1,4 +1,6 @@
 import strawberry
+from strawberry.http import GraphQLHTTPResponse
+from strawberry.exceptions import StrawberryGraphQLError
 from strawberry.field_extensions import InputMutationExtension
 
 from typing import Optional
@@ -14,7 +16,7 @@ from app.graphql.permissions import (
 )
 
 # Responses
-from app.graphql.utils import build_response
+from app.graphql.utils import build_extensions
 
 # Inputs
 from app.graphql.inputs import (
@@ -23,27 +25,8 @@ from app.graphql.inputs import (
 )
 
 # Types
-from app.graphql.types import (
-    UserPrivateType, 
-    ApiErrorType,
-    UserListType,
-    ApiResponseType
-)
-from app.exceptions import (
-    ApiError,
-    DuplicateReviewError,
-    EntityValidationError,
-    ExpirationError,
-    ForbiddenActionError,
-    InvalidCredentialsException,
-    InvalidFieldsException,
-    NotFoundError,
-    ProtectedRouteError,
-    SessionError,
-    TooManyRequestsError,
-    UnknownError,
-    UnprocessableEntity,
-)
+from app.graphql.types.user_type import UserListType, UserPrivateType
+
 
 @strawberry.type
 class AdminUserQuery:
@@ -53,7 +36,7 @@ class AdminUserQuery:
         self, 
         pagination: PaginationInput, 
         filterBy: Optional[FilterByInput] = None
-    ) -> ApiResponseType[UserListType, ApiErrorType]:
+    ) -> UserListType:
         try:
             user_repo = UserRepository()
             pagination = pagination.to_pydantic()
@@ -62,41 +45,31 @@ class AdminUserQuery:
                 filter_by=filter_by, 
                 pagination=pagination
             )
-            return build_response(
-                success=True,
-                data=data
-            )
-        except (
-            ApiError, DuplicateReviewError, EntityValidationError, ExpirationError,
-            ForbiddenActionError, InvalidCredentialsException, InvalidFieldsException,
-            NotFoundError, ProtectedRouteError, SessionError, TooManyRequestsError,
-            UnprocessableEntity,
-        ) as exc:
-            return build_response(False, exc=exc)
+            
+            return data
+        
         except Exception as exc:
-            print(exc)
-            return build_response(False, exc=UnknownError("Erro interno do servidor."))
+            raise StrawberryGraphQLError(
+                message=str(exc),
+                extensions=build_extensions(exc)
+            )
+                
         
     @strawberry.field(permission_classes=[ApiKeyPermission, SessionPermission, RolePermission])
-    async def getById(self, userId: str) -> ApiResponseType[UserPrivateType, ApiErrorType]:
+    async def getById(self, userId: str) -> UserPrivateType:
         try:
             user_repo = UserRepository()
 
             data = await user_repo.get_user_by_id(user_id=userId)
             
-            return build_response(
-                success=True,
-                data=data
-            )
-        except (
-            ApiError, DuplicateReviewError, EntityValidationError, ExpirationError,
-            ForbiddenActionError, InvalidCredentialsException, InvalidFieldsException,
-            NotFoundError, ProtectedRouteError, SessionError, TooManyRequestsError,
-            UnprocessableEntity,
-        ) as exc:
-            return build_response(False, exc=exc)
+            return data
+
         except Exception as exc:
-            return build_response(False, exc=UnknownError("Erro interno do servidor."))
+            raise StrawberryGraphQLError(
+                message=str(exc),
+                extensions=build_extensions(exc)
+            )
+        
         
     
     

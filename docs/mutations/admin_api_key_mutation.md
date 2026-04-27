@@ -1,4 +1,4 @@
-# Auth Mutation
+# API Key Mutation
 
 Documentação representa para registrar no API KEY para acessar a API.
 
@@ -31,12 +31,8 @@ mutation CreateApiKey($schema: ApiKeyInput!){
     admin {
         apiKey {
             create (schema: $schema) {
-                success
-                data {
-                    token
-                    expiresAt
-                }
-                error { errorName typeError statusCode }
+                token
+                expiresAt
             }
         }
     }
@@ -58,7 +54,6 @@ mutation CreateApiKey($schema: ApiKeyInput!){
 
 | Header | Obrigatório | Tipo | Exemplo | 
 | --- | --- | --- | --- | 
-| `X-Api-Key` | Sim | String | `"eyJhbGciOiJIUz...."` |
 | `Authorization` | Sim | Bearer token | `"Bearer eyJhbGciOiJIUz...."` |
 
 
@@ -80,12 +75,8 @@ Todas as operações deste projeto retornam um `ApiResponseType[Sucesso, ApiErro
         "admin": {
             "apiKey": {
                 "create": {
-                    "success": true,
-                    "data": {
-                        "token": "eyJhbGciO...",
-                        "expiresAt": 1777571494.790612
-                    },
-                    "error": null
+                    "token": "eyJhbGciO...",
+                    "expiresAt": 1777571494.790612
                 }
             }
         }
@@ -97,21 +88,26 @@ Todas as operações deste projeto retornam um `ApiResponseType[Sucesso, ApiErro
 
 ```json
 {
-    "data": {
-        "admin": {
-            "apiKey": {
-                "create": {
-                    "success": false,
-                    "data": null,
-                    "error": {
-                        "errorName": "Mensagem de erro",
-                        "typeError": "NomeDaExcecao",
-                        "statusCode": 401
-                    }
+    "data": null,
+    "errors": [
+        {
+            "message": "Mensagem de erro",
+            "locations": [
+                {
+                    "line": 3,
+                    "column": 9
                 }
+            ],
+            "path": [
+                "auth",
+                "login"
+            ],
+            "extensions": {
+                "typeError": "NomeDaExcecao",
+                "statusCode": 401
             }
         }
-    }
+    ]
 }
 ```
 
@@ -119,17 +115,14 @@ Todas as operações deste projeto retornam um `ApiResponseType[Sucesso, ApiErro
 
 | Campo | Tipo | Sempre presente | Descrição |
 | --- | --- | --- | --- |
-| `success` | `bool` | Sim | Indica se a operacao foi concluida com sucesso |
 | `data` | `Resultado\| null` | Sim | Payload de sucesso da operação |
-| `error` | `ApiErrorType \| null` | Sim | Payload de erro quando `success=false` |
-| `timestamp` | `datetime` | Sim | Data e hora em que `build_response` montou a resposta |
 
-#### Estrutura de `error`
+#### Estrutura de `errors`
 
 | Campo | Tipo | Descricao |
 | --- | --- | --- |
 | `typeError` | `string` | Nome da classe da excecao |
-| `errorName` | `string` | Mensagem retornada pela excecao |
+| `message` | `string` | Mensagem retornada pela excecao |
 | `statusCode` | `int` | Codigo HTTP/logico associado ao erro |
 
 
@@ -194,11 +187,7 @@ Todas as operações deste projeto retornam um `ApiResponseType[Sucesso, ApiErro
     "data": {
         "admin": {
             "apiKey": {
-                "delete": {
-                    "success": true,
-                    "data": null,
-                    "error": null
-                }
+                "delete": null
             }
         }
     }
@@ -209,21 +198,26 @@ Todas as operações deste projeto retornam um `ApiResponseType[Sucesso, ApiErro
 
 ```json
 {
-    "data": {
-        "admin": {
-            "apiKey": {
-                "delete": {
-                    "success": true,
-                    "data": null,
-                    "error": {
-                        "errorName": "Mensagem de erro",
-                        "typeError": "NomeDaExcecao",
-                        "statusCode": 401
-                    }
+    "data": null,
+    "errors": [
+        {
+            "message": "Mensagem de erro",
+            "locations": [
+                {
+                    "line": 3,
+                    "column": 9
                 }
+            ],
+            "path": [
+                "auth",
+                "login"
+            ],
+            "extensions": {
+                "typeError": "NomeDaExcecao",
+                "statusCode": 401
             }
         }
-    }
+    ]
 }
 ```
 
@@ -231,17 +225,14 @@ Todas as operações deste projeto retornam um `ApiResponseType[Sucesso, ApiErro
 
 | Campo | Tipo | Sempre presente | Descrição |
 | --- | --- | --- | --- |
-| `success` | `bool` | Sim | Indica se a operacao foi concluida com sucesso |
 | `data` | `Resultado\| null` | Sim | Payload de sucesso da operação |
-| `error` | `ApiErrorType \| null` | Sim | Payload de erro quando `success=false` |
-| `timestamp` | `datetime` | Sim | Data e hora em que `build_response` montou a resposta |
 
-#### Estrutura de `error`
+#### Estrutura de `errors`
 
 | Campo | Tipo | Descricao |
 | --- | --- | --- |
 | `typeError` | `string` | Nome da classe da excecao |
-| `errorName` | `string` | Mensagem retornada pela excecao |
+| `message` | `string` | Mensagem retornada pela excecao |
 | `statusCode` | `int` | Codigo HTTP/logico associado ao erro |
 
 

@@ -1,16 +1,17 @@
 import strawberry
+from strawberry.exceptions import StrawberryGraphQLError
+from typing import Optional
 
 # Repository
 from app.repositories.user_repository import UserRepository
 
 # Inputs
 from app.graphql.inputs import (
-    UserInput,
     UserUpdatePublicInput,
 )
 
 # Responses
-from app.graphql.utils import build_response
+from app.graphql.utils import build_extensions
 
 # Permissions
 from app.graphql.permissions import (
@@ -19,34 +20,13 @@ from app.graphql.permissions import (
 )
 
 # Types
-from app.graphql.types import (
-    UserPublicType, 
-    ApiErrorType,
-    ApiResponseType
-)
-
-# Services
-from app.exceptions import (
-    ApiError,
-    DuplicateReviewError,
-    EntityValidationError,
-    ExpirationError,
-    ForbiddenActionError,
-    InvalidCredentialsException,
-    InvalidFieldsException,
-    NotFoundError,
-    ProtectedRouteError,
-    SessionError,
-    TooManyRequestsError,
-    UnknownError,
-    UnprocessableEntity,
-)
+from app.graphql.types.user_type import UserPublicType
 
 @strawberry.type
 class AccountMutation:
           
     @strawberry.mutation(permission_classes=[ApiKeyPermission, SessionPermission])
-    async def updateProfile(self, info, schema: UserUpdatePublicInput) -> ApiResponseType[UserPublicType, ApiErrorType]:  
+    async def updateProfile(self, info: strawberry.Info, schema: UserUpdatePublicInput) -> UserPublicType:  
         try:
             user = info.context["user"]
 
@@ -55,34 +35,25 @@ class AccountMutation:
             
             user_repo = UserRepository()
 
-            return build_response(
-                success=True,
-                data=await user_repo.update_user(user_update)
+            return await user_repo.update_user(user_update)
+
+        except Exception as exc:
+             raise StrawberryGraphQLError(
+                message=str(exc),
+                extensions=build_extensions(exc)
             )
-        except (
-            ApiError, DuplicateReviewError, EntityValidationError, ExpirationError,
-            ForbiddenActionError, InvalidCredentialsException, InvalidFieldsException,
-            NotFoundError, ProtectedRouteError, SessionError, TooManyRequestsError,
-            UnprocessableEntity,
-        ) as exc:
-            return build_response(False, exc=exc)
-        except Exception:
-            return build_response(False, exc=UnknownError("Erro interno do servidor."))
         
 
     @strawberry.mutation(permission_classes=[ApiKeyPermission, SessionPermission])
-    async def deleteAccount(self, info) -> ApiResponseType[bool, ApiErrorType]:
+    async def deleteAccount(self, info) -> None:
         try:
             user = info.context["user"]
             user_repo = UserRepository()
             await user_repo.delete_user(user["userId"])
-            return build_response(True)
-        except (
-            ApiError, DuplicateReviewError, EntityValidationError, ExpirationError,
-            ForbiddenActionError, InvalidCredentialsException, InvalidFieldsException,
-            NotFoundError, ProtectedRouteError, SessionError, TooManyRequestsError,
-            UnprocessableEntity,
-        ) as exc:
-            return build_response(False, exc=exc)
-        except Exception:
-            return build_response(False, exc=UnknownError("Erro interno do servidor."))
+            return 
+        
+        except Exception as exc:
+             raise StrawberryGraphQLError(
+                message=str(exc),
+                extensions=build_extensions(exc)
+            )

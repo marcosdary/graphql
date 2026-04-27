@@ -29,15 +29,10 @@ Objetivo do me é acessar informações do usuário no sistema.
 query {
     user {
         me {
-            success
-            data { 
-                name 
-                email 
-                createdAt 
-                updatedAt 
-            }
-            error { errorName typeError statusCode }
-            timestamp
+           name 
+            email 
+            createdAt 
+            updatedAt 
         }
     }
 }
@@ -64,15 +59,10 @@ Todas as operações deste projeto retornam um `ApiResponseType[Sucesso, ApiErro
     "data": {
         "user": {
             "me": {
-                "success": true,
-                "data": {
-                    "name": "Nome Usuário",
-                    "email": "usuario@email.com",
-                    "createdAt": 1775228778.306308,
-                    "updatedAt": 1776944662.517973
-                },
-                "error": null,
-                "timestamp": 1776946703.395913
+                "name": "Nome Usuário",
+                "email": "usuario@email.com",
+                "createdAt": 1775228778.306308,
+                "updatedAt": 1776944662.517973
             }
         }
     }
@@ -83,20 +73,26 @@ Todas as operações deste projeto retornam um `ApiResponseType[Sucesso, ApiErro
 
 ```json
 {
-    "data": {
-        "user": {
-            "me": {
-                "success": false,
-                "data": null,
-                "error": {
-                    "errorName": "Mensagem de erro",
-                    "typeError": "NomeDaExcecao",
-                    "statusCode": 401
-                },
-                "timestamp": 0
+    "data": null,
+    "errors": [
+        {
+            "message": "Mensagem de erro",
+            "locations": [
+                {
+                    "line": 3,
+                    "column": 9
+                }
+            ],
+            "path": [
+                "auth",
+                "login"
+            ],
+            "extensions": {
+                "typeError": "NomeDaExcecao",
+                "statusCode": 401
             }
         }
-    }
+    ]
 }
 ```
 
@@ -104,17 +100,14 @@ Todas as operações deste projeto retornam um `ApiResponseType[Sucesso, ApiErro
 
 | Campo | Tipo | Sempre presente | Descrição |
 | --- | --- | --- | --- |
-| `success` | `bool` | Sim | Indica se a operacao foi concluida com sucesso |
 | `data` | `Resultado\| null` | Sim | Payload de sucesso da operação |
-| `error` | `ApiErrorType \| null` | Sim | Payload de erro quando `success=false` |
-| `timestamp` | `datetime` | Sim | Data e hora em que `build_response` montou a resposta |
 
 #### Estrutura de `error`
 
 | Campo | Tipo | Descricao |
 | --- | --- | --- |
 | `typeError` | `string` | Nome da classe da excecao |
-| `errorName` | `string` | Mensagem retornada pela excecao |
+| `message` | `string` | Mensagem retornada pela excecao |
 | `statusCode` | `int` | Codigo HTTP/logico associado ao erro |
 
 

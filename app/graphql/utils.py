@@ -1,43 +1,21 @@
-from datetime import datetime
 from fastapi import Request, Response
 
-from app.dto.api_error import ApiErrorModel
-from app.graphql.types import ApiResponseType
 from app.constants import SendType, ExpirationAt
 from app.services import token, queries
 from app.dto.notification_system import (
     NotificationSystemCreateModel
 )
 
+def build_extensions(exc: Exception) -> dict:
+    """Converte o padrão `build_response` para `GraphQLError.extensions`.
 
-def build_response(success: bool, data=None, exc: Exception | None = None) -> ApiResponseType:
-    """Constrói um ApiResponseType padronizado.
-
-    Args:
-        success: Indica se a operação foi bem‑sucedida.
-        data: Valor a ser retornado quando success=True.
-        exc: Exceção capturada quando success=False.
-
-    Returns:
-        ApiResponseType: objeto pronto para ser retornado ao cliente.
+    Permissions do Strawberry retornam erro via GraphQL errors, então
+    anexamos a estrutura padronizada em `extensions.response`.
     """
-    if success:
-        return ApiResponseType(
-            success=True, 
-            data=data, 
-            timestamp=datetime.now()
-        )
-
-    # Caso de erro
-    return ApiResponseType(
-        success=False,
-        error=ApiErrorModel(
-            typeError=exc.__class__.__name__ if exc else "Error",
-            errorName=str(exc) if exc else "",
-            statusCode=getattr(exc, "status_code", 500),
-        ),
-        timestamp=datetime.now()
-    )
+    return {
+        "typeError": exc.__class__.__name__ if exc else "UnknownError",
+        "statusCode": getattr(exc, "status_code", 500),
+    }
 
 
 async def create_session(userId: str, role: str):

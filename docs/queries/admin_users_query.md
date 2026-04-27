@@ -31,24 +31,20 @@ query ListUsersSchema($input: ListInput!){
         users {
             list (input: $input){
                 success
-                data { 
-                    items {
-                        userId
-                        name 
-                        email
-                        role,
-                        password,
-                        isDeleted,
-                        createdAt,
-                        updatedAt
-                    }
-                    total
-                    page
-                    limit
-                    hasNextPage
+                items {
+                    userId
+                    name 
+                    email
+                    role,
+                    password,
+                    isDeleted,
+                    createdAt,
+                    updatedAt
                 }
-                error { errorName typeError statusCode }
-                timestamp
+                total
+                page
+                limit
+                hasNextPage     
             }
         }
         
@@ -107,27 +103,22 @@ Todas as operações deste projeto retornam um `ApiResponseType[Sucesso, ApiErro
         "admin": {
             "users": {
                 "list": {
-                    "success": true,
-                    "data": {
-                        "items": [
-                            {
-                                "userId": "2caafd25-a9d9-4a63-8ffb-27db1febc506",
-                                "name": "Kiss Martin",
-                                "email": "kiss2@gmail.com",
-                                "role": "USER",
-                                "password": null,
-                                "isDeleted": false,
-                                "createdAt": 1776945291.11555,
-                                "updatedAt": 1776945291.115559
-                            }
-                        ],
-                        "total": 16,
-                        "page": 1,
-                        "limit": 1,
-                        "hasNextPage": true
-                    },
-                    "error": null,
-                    "timestamp": 1776965155.517726
+                    "items": [
+                        {
+                            "userId": "2caafd25-a9d9-4a63-8ffb-27db1febc506",
+                            "name": "Kiss Martin",
+                            "email": "kiss2@gmail.com",
+                            "role": "USER",
+                            "password": null,
+                            "isDeleted": false,
+                            "createdAt": 1776945291.11555,
+                            "updatedAt": 1776945291.115559
+                        }
+                    ],
+                    "total": 16,
+                    "page": 1,
+                    "limit": 1,
+                    "hasNextPage": true
                 }
             }
         }
@@ -139,22 +130,26 @@ Todas as operações deste projeto retornam um `ApiResponseType[Sucesso, ApiErro
 
 ```json
 {
-    "data": {
-        "admin": {
-            "users": {
-                "list": {
-                    "success": false,
-                    "data": null,
-                    "error": {
-                        "errorName": "Mensagem de erro",
-                        "typeError": "NomeDaExcecao",
-                        "statusCode": 401
-                    },
-                    "timestamp": 0
+    "data": null,
+    "errors": [
+        {
+            "message": "Mensagem de erro",
+            "locations": [
+                {
+                    "line": 3,
+                    "column": 9
                 }
+            ],
+            "path": [
+                "auth",
+                "login"
+            ],
+            "extensions": {
+                "typeError": "NomeDaExcecao",
+                "statusCode": 401
             }
         }
-    }
+    ]
 }
 ```
 
@@ -162,17 +157,14 @@ Todas as operações deste projeto retornam um `ApiResponseType[Sucesso, ApiErro
 
 | Campo | Tipo | Sempre presente | Descrição |
 | --- | --- | --- | --- |
-| `success` | `bool` | Sim | Indica se a operacao foi concluida com sucesso |
 | `data` | `Resultado\| null` | Sim | Payload de sucesso da operação |
-| `error` | `ApiErrorType \| null` | Sim | Payload de erro quando `success=false` |
-| `timestamp` | `datetime` | Sim | Data e hora em que `build_response` montou a resposta |
 
 #### Estrutura de `error`
 
 | Campo | Tipo | Descricao |
 | --- | --- | --- |
 | `typeError` | `string` | Nome da classe da excecao |
-| `errorName` | `string` | Mensagem retornada pela excecao |
+| `message` | `string` | Mensagem retornada pela excecao |
 | `statusCode` | `int` | Codigo HTTP/logico associado ao erro |
 
 
@@ -195,18 +187,14 @@ query GetByIdUser($userId: String!){
     admin {
         users {
             getById(userId: $userId){
-                success
-                data { 
-                    userId
-                    name 
-                    email 
-                    role
-                    password
-                    isDeleted
-                    createdAt 
-                    updatedAt 
-                }
-                error { errorName typeError statusCode }
+                userId
+                name 
+                email 
+                role
+                password
+                isDeleted
+                createdAt 
+                updatedAt 
             }       
         }
     }
@@ -248,15 +236,11 @@ Todas as operações deste projeto retornam um `ApiResponseType[Sucesso, ApiErro
         "admin": {
             "users": {
                 "getById": {
-                    "success": true,
-                    "data": {
-                        "name": "Nome do Usuário",
-                        "email": "usuario@exemplo.com",
-                        "isDeleted": false,
-                        "createdAt": 1776945291.11555,
-                        "updatedAt": 1776945291.115559
-                    },
-                    "error": null
+                    "name": "Nome do Usuário",
+                    "email": "usuario@exemplo.com",
+                    "isDeleted": false,
+                    "createdAt": 1776945291.11555,
+                    "updatedAt": 1776945291.115559  
                 }
             }
         }
@@ -268,21 +252,26 @@ Todas as operações deste projeto retornam um `ApiResponseType[Sucesso, ApiErro
 
 ```json
 {
-    "data": {
-        "admin": {
-            "users": {
-                "getById": {
-                    "success": false,
-                    "data": null,
-                    "error": {
-                        "errorName": "Mensagem de erro",
-                        "typeError": "NomeDaExcecao",
-                        "statusCode": 401
-                    }
+    "data": null,
+    "errors": [
+        {
+            "message": "Mensagem de erro",
+            "locations": [
+                {
+                    "line": 3,
+                    "column": 9
                 }
+            ],
+            "path": [
+                "auth",
+                "login"
+            ],
+            "extensions": {
+                "typeError": "NomeDaExcecao",
+                "statusCode": 401
             }
         }
-    }
+    ]
 }
 ```
 
@@ -290,17 +279,14 @@ Todas as operações deste projeto retornam um `ApiResponseType[Sucesso, ApiErro
 
 | Campo | Tipo | Sempre presente | Descrição |
 | --- | --- | --- | --- |
-| `success` | `bool` | Sim | Indica se a operacao foi concluida com sucesso |
 | `data` | `Resultado\| null` | Sim | Payload de sucesso da operação |
-| `error` | `ApiErrorType \| null` | Sim | Payload de erro quando `success=false` |
-| `timestamp` | `datetime` | Sim | Data e hora em que `build_response` montou a resposta |
 
 #### Estrutura de `error`
 
 | Campo | Tipo | Descricao |
 | --- | --- | --- |
 | `typeError` | `string` | Nome da classe da excecao |
-| `errorName` | `string` | Mensagem retornada pela excecao |
+| `message` | `string` | Mensagem retornada pela excecao |
 | `statusCode` | `int` | Codigo HTTP/logico associado ao erro |
 
 

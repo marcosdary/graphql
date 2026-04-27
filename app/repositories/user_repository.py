@@ -49,9 +49,13 @@ class UserRepository:
                 HashPassword().hash_password, 
                 create_user.password
             )
-
-            user_data = create_user.model_dump()
-            user_data["password"] = hashed_pw
+            
+            user_data = (
+                create_user.
+                model_copy(update={"password": hashed_pw}).
+                model_dump()
+            )
+            
             new_user = User(**user_data)
 
             session.add(new_user)
@@ -78,7 +82,7 @@ class UserRepository:
             
             if not user:
                 raise InvalidCredentialsException(
-                    "E-mail ou senha inválidos ou não cadastrados ou apagados. " \
+                    "E-mail ou senha inválidos. " \
                     "Em dúvida, entre em contato com suporte."
                 )
             
@@ -89,7 +93,7 @@ class UserRepository:
             )
 
             if not is_valid:
-                raise InvalidCredentialsException("Senha inválida ou incorreta.")
+                raise InvalidCredentialsException("E-mail ou senha inválidos..")
             
             return UserReadModel.model_validate(user)
     
@@ -110,34 +114,35 @@ class UserRepository:
 
     async def update_user(self, user_update: UserUpdateModel) -> UserReadModel:
         async with AsyncSession() as session:
-            query = await session.execute(
-                select(User).where(
-                    User.userId==user_update.userId, 
-                    User.isDeleted != True
-                )
-            )
-            user = query.scalars().first()
-            
-            if not user:
-                raise NotFoundError("Usuário não encontrado ou removido do sistema.")
-            
-            if user_update.role == Roles.SUPER_ADMIN:
-                raise DuplicateReviewError(
-                    "Registro de Administrador negado, pois só pode ter um único master. " \
-                    "Entre em contato com o suporte para potenciais mudanças."
-                )
-
-            for key, value in user_update.model_dump().items():
-                if value is not None:
-                    setattr(user, key, value)
 
             try:
-                await session.commit()
-                return UserReadModel.model_validate(user)
+                query = await session.execute(
+                    select(User).where(
+                        User.userId==user_update.userId, 
+                        User.isDeleted != True
+                    )
+                )
+                user = query.scalars().first()
+                
+                if not user:
+                    raise NotFoundError("Usuário não encontrado ou removido do sistema.")
+                
+                if user_update.role == Roles.SUPER_ADMIN:
+                    raise DuplicateReviewError(
+                        "Registro de Administrador negado, pois só pode ter um único master. " \
+                        "Entre em contato com o suporte para potenciais mudanças."
+                    )
+
+                for key, value in user_update.model_dump().items():
+                    if value is not None:
+                        setattr(user, key, value)
+                    await session.commit()
+                    return UserReadModel.model_validate(user)
             
             except IntegrityError:
                 await session.rollback()
                 raise EntityValidationError("Não foi possível atualizar o usuário.")
+            
             except SQLAlchemyError as exc:
                 await session.rollback()
                 raise exc
@@ -166,34 +171,34 @@ class UserRepository:
                 User.updatedAt
             )
 
-            total = await self.__count_rows()
-
             filters = self.__filters_by(filter_by=filter_by)
             
             page, limit = 1, 10
-
+            
             if not pagination.all_:
-                offset = (page - 1) * limit
-                query = query.offset(offset).limit(limit)
-
                 if pagination.page and pagination.limit:
                     page, limit = pagination.page, pagination.limit
             
+            offset = (page - 1) * limit
+
+            list_query = query.order_by(User.createdAt.desc()).offset(offset).limit(limit + 1)
+
+            if filters:
+                list_query = list_query.where(and_(*filters))
+            
             stmt = await session.execute(
-                query.where(
-                    and_(*filters)
-                ).order_by(
-                    User.createdAt.desc()
-                )
+                list_query
             )
-            users = stmt.all()
+            rows = stmt.all()
+            
+            has_next = len(rows) > limit
+            items = rows[:limit]
 
             return UserListModel(
-                items=[UserReadModel.model_validate(u) for u in users],
-                total=total,
+                items=[UserReadModel.model_validate(u) for u in items],
                 page=page,
                 limit=limit,
-                hasNextPage=(limit * page) < total
+                hasNextPage=has_next
             )
 
 
@@ -213,7 +218,7 @@ class UserRepository:
                     "Por favor, entre em contato com o suporte"
                 )
 
-            user.isDeleted = True
+            await session.delete(user)
             try:
                 await session.commit()
                 return
@@ -236,10 +241,14 @@ class UserRepository:
             
     # Others methods for count rows
 
-    async def __count_rows(self) -> int:
-        async with AsyncSession() as session:
-            count_query = select(func.count()).select_from(User)
-            return await session.scalar(count_query)
+    async def __count_rows(self, session, filters: List[bool] = None) -> int:
+        count_query = select(func.count()).select_from(User)
+
+        if filters:
+            count_query = count_query.where(and_(*filters))
+
+        total = await session.scalar(count_query)
+        return total or 0
 
     def __filters_by(self, filter_by: FilterByModel = None) -> List[bool]:
         filters = []
@@ -253,7 +262,7 @@ class UserRepository:
                 User.name.ilike(f"%{name}%")
             )
 
-        if filter_by.isDeleted:
+        if filter_by.isDeleted is not None:
             filters.append(
                 User.isDeleted == filter_by.isDeleted
             )
@@ -268,7 +277,7 @@ class UserRepository:
             end = start + timedelta(days=1)
 
             filters.append(
-                User.createdAt >= filter_by.createdAt
+                User.createdAt >= start
             )
             filters.append(
                 User.createdAt < end

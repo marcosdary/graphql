@@ -1,4 +1,5 @@
 from strawberry.experimental.pydantic import input as pydantic_input
+from strawberry.experimental.pydantic import error_type as pydantic_error_type
 import strawberry
 
 from app.dto.user import (

@@ -15,8 +15,6 @@ class RolePermission(BasePermission):
 
     async def has_permission(self, source, info, **kwargs):
         try:
-        
-            field_name = info._raw_info.field_name
             
             context: dict = info.context["user"]
             *_, role = context.values()
