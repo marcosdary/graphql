@@ -1,29 +1,29 @@
 # Graph API
 
-Graph API is a FastAPI + Strawberry GraphQL backend focused on authentication, user management, session handling, API key protection, and a webhook endpoint for signed payload validation.
+Graph API é um backend FastAPI + Strawberry GraphQL focado em autenticação, gerenciamento de usuários, manipulação de sessões, proteção por chaves de API e um endpoint de webhook para validação de payloads assinados.
 
-The project uses PostgreSQL for persistence, Redis for temporary token/session storage, and JWT-based signed tokens for API keys, sessions, 2FA, and password reset flows.
+O projeto utiliza PostgreSQL para persistência, Redis para armazenamento temporário de tokens e sessões, e tokens JWT assinados para chaves de API, sessões, 2FA e fluxos de redefinição de senha.
 
-## Overview
+## Visão Geral
 
-This service exposes:
+Este serviço expõe:
 
-- A `GET /` health-style endpoint with basic app metadata
-- A `POST /webhook` endpoint protected by `x-webhook-secret`
-- A GraphQL API at `/graphql`
+- Um endpoint `GET /` do tipo health check com metadados básicos da aplicação
+- Um endpoint `POST /webhook` protegido por `x-webhook-secret`
+- Uma API GraphQL em `/graphql`
 
-The GraphQL layer supports:
+A camada GraphQL suporta:
 
-- User registration
-- Login with two-factor authentication
-- Session creation and validation
-- Password reset flow
-- Authenticated user profile access and update
-- Soft deletion of users
-- Admin and super-admin protected operations
-- API key generation and revocation
+- Registro de usuários
+- Login com autenticação de dois fatores (2FA)
+- Criação e validação de sessões
+- Fluxo de redefinição de senha
+- Acesso e atualização de perfil do usuário autenticado
+- Exclusão lógica (soft delete) de usuários
+- Operações protegidas para admin e super-admin
+- Geração e revogação de chaves de API
 
-## Tech Stack
+## Stack Tecnológica
 
 - Python 3.12+
 - FastAPI
@@ -35,71 +35,71 @@ The GraphQL layer supports:
 - Pydantic / pydantic-settings
 - Uvicorn
 
-## Architecture
+## Arquitetura
 
-The codebase is organized around a fairly standard layered structure:
+O código está organizado em uma estrutura em camadas bastante padrão:
 
-- `app/main.py`: FastAPI application bootstrap, CORS setup, webhook router, and GraphQL router
-- `app/config/`: environment settings, database engines, and Redis clients
-- `app/models/`: SQLAlchemy models
-- `app/dto/`: Pydantic models used between layers
-- `app/repositories/`: database access and persistence logic
-- `app/services/`: token services, password hashing, cache helpers, rate limiting, and external integrations
-- `app/graphql/`: schema composition, queries, mutations, inputs, types, permissions, and response helpers
-- `app/routes/`: non-GraphQL HTTP routes
-- `app/clients/`: outbound client integrations
-- `app/utils/`: small utility helpers
-- `tests/`: unit and async permission tests
+- `app/main.py`: Inicialização da aplicação FastAPI, configuração de CORS, roteador de webhook e roteador GraphQL
+- `app/config/`: Configurações de ambiente, engines do banco de dados e clientes Redis
+- `app/models/`: Modelos SQLAlchemy
+- `app/dto/`: Modelos Pydantic usados entre as camadas
+- `app/repositories/`: Lógica de acesso e persistência no banco de dados
+- `app/services/`: Serviços de tokens, hash de senhas, helpers de cache, rate limiting e integrações externas
+- `app/graphql/`: Composição do schema, queries, mutations, inputs, types, permissões e helpers de resposta
+- `app/routes/`: Rotas HTTP não-GraphQL
+- `app/clients/`: Integrações com clientes externos
+- `app/utils/`: Pequenos utilitários auxiliares
+- `tests/`: Testes unitários e testes assíncronos de permissões
 
-## Main Functional Areas
+## Principais Áreas Funcionais
 
-### Authentication
+### Autenticação
 
-The authentication flow is split into multiple steps:
+O fluxo de autenticação é dividido em múltiplas etapas:
 
-1. `login` validates email and password.
-2. A two-factor token and numeric code are generated and stored in Redis.
-3. `verifyTwoFactor` consumes the temporary 2FA token and creates a session token.
-4. Protected operations use the session token through the `session-id` header.
+1. `login` valida o e-mail e a senha.
+2. Um token temporário de dois fatores e um código numérico são gerados e armazenados no Redis.
+3. `verifyTwoFactor` consome o token temporário de 2FA e cria um token de sessão.
+4. Operações protegidas utilizam o token de sessão através do header `session-id`.
 
-### API Key Protection
+### Proteção por Chave de API
 
-Some GraphQL operations also require an API key in the `Authorization` header:
+Algumas operações GraphQL também exigem uma chave de API no header `Authorization`:
 
-- Format: `Authorization: Bearer <api-key>`
+- Formato: `Authorization: Bearer <api-key>`
 
-API keys are signed and stored in Redis with an expiration time. Protected resolvers validate the token before executing.
+As chaves de API são assinadas e armazenadas no Redis com tempo de expiração. Os resolvers protegidos validam o token antes de executar a operação.
 
-### Role-Based Authorization
+### Autorização Baseada em Roles
 
-The project defines three roles:
+O projeto define três roles:
 
 - `USER`
 - `ADMIN`
 - `SUPER_ADMIN`
 
-Admin-only routes are enforced through Strawberry permission classes. Access is validated from the current session payload and checked against an allowlist of resolver names.
+Rotas exclusivas de admin são aplicadas através de classes de permissão do Strawberry. O acesso é validado a partir do payload da sessão atual e verificado contra uma lista de resolvers permitidos.
 
-### Password Reset
+### Redefinição de Senha
 
-The password reset flow also uses Redis-backed expiring tokens:
+O fluxo de redefinição de senha também utiliza tokens com expiração armazenados no Redis:
 
-1. `forgotPassword` generates a reset token.
-2. `resetPassword` validates and consumes that token.
-3. The user password is updated after token verification.
+1. `forgotPassword` gera um token de redefinição.
+2. `resetPassword` valida e consome esse token.
+3. A senha do usuário é atualizada após a verificação do token.
 
-### Webhook Validation
+### Validação de Webhook
 
-The `/webhook` route:
+A rota `/webhook`:
 
-- Requires an `x-webhook-secret` header matching `WEBHOOK_SECRET`
-- Expects a JSON payload with a `data` field
-- Decodes the signed token using HS256
-- Returns `204 No Content` when the payload is accepted
+- Exige o header `x-webhook-secret` compatível com `WEBHOOK_SECRET`
+- Espera um payload JSON com o campo `data`
+- Decodifica o token assinado usando HS256
+- Retorna `204 No Content` quando o payload é aceito
 
-## Data Layer
+## Camada de Dados
 
-The current database model includes a `users` table with:
+O modelo atual do banco de dados inclui a tabela `users` com:
 
 - `userId`
 - `name`
@@ -110,27 +110,27 @@ The current database model includes a `users` table with:
 - `createdAt`
 - `updatedAt`
 
-Deletion is soft deletion in normal user flows: `delete_user` marks `isDeleted = True`.
+A exclusão é lógica nos fluxos normais de usuário: `delete_user` apenas marca `isDeleted = True`.
 
-There is also a repository helper to physically remove inactive users, but it is not exposed by the public API at the moment.
+Existe um helper no repositório para remover fisicamente usuários inativos, mas ele não está exposto pela API pública no momento.
 
-## Redis Usage
+## Uso do Redis
 
-Redis is used as short-lived storage for:
+O Redis é utilizado como armazenamento de curta duração para:
 
-- Sessions
-- API keys
-- Two-factor authentication codes
-- Password reset tokens
-- Rate limit counters
+- Sessões
+- Chaves de API
+- Códigos de autenticação de dois fatores
+- Tokens de redefinição de senha
+- Contadores de rate limit
 
-Expiration times currently defined in code:
+Tempos de expiração atualmente definidos no código:
 
-- Session: 3 hours
-- Two-factor authentication: 10 minutes
-- Password reset: 15 minutes
+- Sessão: 3 horas
+- Autenticação de dois fatores: 10 minutos
+- Redefinição de senha: 15 minutos
 
-## GraphQL Schema Summary
+## Resumo do Schema GraphQL
 
 ### Queries
 
@@ -153,7 +153,7 @@ Expiration times currently defined in code:
 - `deleteUserByAdmin`
 - `deleteApiKey`
 
-### Key GraphQL Types
+### Principais Tipos GraphQL
 
 - `UserPublicType`
 - `UserPrivateType`
@@ -163,50 +163,50 @@ Expiration times currently defined in code:
 - `ApiResponseType`
 - `ApiErrorType`
 
-## Authentication and Headers
+## Autenticação e Headers
 
-Depending on the resolver, the API may require one or both headers below:
+Dependendo do resolver, a API pode exigir um ou ambos os headers abaixo:
 
 - `Authorization: Bearer <session-token>`
 - `api-key: <api-key>`
 
-Resolver protection in practice:
+Proteção dos resolvers na prática:
 
-- Public: `login`, `verifyTwoFactor`, `forgotPassword`, `resetPassword`
-- API key only: `create`
-- API key + session: `getUser`, `update`, `delete`
-- Role-protected session routes: `listUsers`, `getByIdUser`, `createApiKey`, `createUserByAdmin`, `updateUserByAdmin`, `deleteUserByAdmin`, `deleteApiKey`
+- Públicos: `login`, `verifyTwoFactor`, `forgotPassword`, `resetPassword`
+- Apenas chave de API: `create`
+- Chave de API + sessão: `getUser`, `update`, `delete`
+- Rotas com sessão protegidas por role: `listUsers`, `getByIdUser`, `createApiKey`, `createUserByAdmin`, `updateUserByAdmin`, `deleteUserByAdmin`, `deleteApiKey`
 
-## Example GraphQL Flows
+## Exemplos de Fluxos GraphQL
 
-Sample operations already exist in [`auth.graphql`](/home/matheus-silva-oliveira/Área%20de%20trabalho/graph/auth.graphql), which is a good starting point for manual testing.
+Existem operações de exemplo no arquivo [`auth.graphql`](/home/matheus-silva-oliveira/Área%20de%20trabalho/graph/auth.graphql), que é um bom ponto de partida para testes manuais.
 
-Typical login flow:
+Fluxo típico de login:
 
-1. Call `login` with email and password.
-2. Read `token` and `number` from `TwoFactorAuthType`.
-3. Call `verifyTwoFactor` with those values.
-4. Store the returned `sessionId`.
-5. Use `session-id` in subsequent protected calls.
+1. Chamar `login` com e-mail e senha.
+2. Ler o `token` e o `number` retornados no `TwoFactorAuthType`.
+3. Chamar `verifyTwoFactor` com esses valores.
+4. Armazenar o `sessionId` retornado.
+5. Usar o `session-id` nas chamadas protegidas subsequentes.
 
-## Environment Variables
+## Variáveis de Ambiente
 
-Create a `.env` file in the project root and define the following values:
+Crie um arquivo `.env` na raiz do projeto e defina os seguintes valores:
 
-| Variable | Purpose |
-|---|---|
-| `REDIS_URL` | Redis connection string |
-| `DATABASE_URL` | Synchronous PostgreSQL connection string |
-| `DATABASE_URL_ASYNC` | Async PostgreSQL connection string |
-| `CREATE_API_KEY` | Secret used to sign API keys |
-| `PASSWORD_RESET_KEY` | Secret used to sign password reset tokens |
-| `TWO_FACTOR_AUTH_KEY` | Secret used to sign 2FA tokens |
-| `SESSION_KEY` | Secret used to sign sessions |
-| `API_KEY` | API key used when calling the external notification system |
-| `URL_NOTIFICATION_SYSTEM` | GraphQL endpoint for the notification service |
-| `WEBHOOK_SECRET` | Shared secret used by `/webhook` |
+| Variável                  | Propósito |
+|---------------------------|---------|
+| `REDIS_URL`               | String de conexão do Redis |
+| `DATABASE_URL`            | String de conexão síncrona do PostgreSQL |
+| `DATABASE_URL_ASYNC`      | String de conexão assíncrona do PostgreSQL |
+| `CREATE_API_KEY`          | Segredo usado para assinar chaves de API |
+| `PASSWORD_RESET_KEY`      | Segredo usado para assinar tokens de redefinição de senha |
+| `TWO_FACTOR_AUTH_KEY`     | Segredo usado para assinar tokens de 2FA |
+| `SESSION_KEY`             | Segredo usado para assinar sessões |
+| `API_KEY`                 | Chave de API usada ao chamar o sistema de notificações externo |
+| `URL_NOTIFICATION_SYSTEM` | Endpoint GraphQL do serviço de notificações |
+| `WEBHOOK_SECRET`          | Segredo compartilhado usado pelo `/webhook` |
 
-Example:
+Exemplo:
 
 ```env
 REDIS_URL=redis://localhost:6379/0
@@ -220,147 +220,3 @@ API_KEY=change-me
 URL_NOTIFICATION_SYSTEM=http://localhost:9000/graphql
 WEBHOOK_SECRET=change-me
 ```
-
-## Installation
-
-Using `uv`:
-
-```bash
-uv sync
-```
-
-Using `pip`:
-
-```bash
-pip install -r requirements.txt
-```
-
-## Running Locally
-
-Start the application with:
-
-```bash
-uvicorn app.main:app --reload
-```
-
-Default local URLs:
-
-- App root: `http://localhost:8000/`
-- GraphQL endpoint: `http://localhost:8000/graphql`
-- OpenAPI docs: `http://localhost:8000/docs`
-
-## Database Notes
-
-This repository does not currently include migrations or seed scripts.
-
-Before running the app, make sure:
-
-- PostgreSQL is available
-- Redis is available
-- The required tables already exist in the database
-
-## Caching and Performance Notes
-
-The async SQLAlchemy engine is configured with:
-
-- `pool_size=10`
-- `max_overflow=20`
-- `pool_recycle=3600`
-- `pool_pre_ping=True`
-
-There is also a Redis-backed user cache service used by admin list queries.
-
-## External Notification Integration
-
-The project contains an outbound GraphQL client for a notification system:
-
-- `app/clients/notification_system_client.py`
-- `app/services/queries/notification_system_service.py`
-
-The mutation code already includes commented-out hooks for:
-
-- registration emails
-- password reset emails
-- password change emails
-- two-factor authentication emails
-
-So the integration layer exists, but notification sending is currently disabled in the GraphQL mutation flow.
-
-## Tests
-
-The current test suite covers:
-
-- timestamp defaults in the base model
-- signed token decoding
-- route protection behavior for admin and super-admin role checks
-
-Run tests with:
-
-```bash
-python3 -m unittest discover -s tests -p "test_*.py"
-```
-
-## Project Structure
-
-```text
-.
-├── app
-│   ├── clients
-│   ├── config
-│   ├── constants
-│   ├── dto
-│   ├── graphql
-│   ├── models
-│   ├── repositories
-│   ├── routes
-│   ├── services
-│   └── utils
-├── tests
-├── auth.graphql
-├── schema.graphql
-├── pyproject.toml
-└── requirements.txt
-```
-
-## Important Implementation Notes
-
-- CORS is currently open to all origins.
-- The GraphQL app does not define a custom context builder; permissions access the FastAPI request object from Strawberry's default integration.
-- Redis keys are used as the token itself for session, API key, 2FA, and reset-token tracking.
-- 2FA and password reset tokens are single-use because validation consumes them from Redis.
-- User deletion is logical, not physical, in the exposed mutations.
-- Creating users with the `SUPER_ADMIN` role is intentionally blocked in repository logic.
-
-## Known Gaps
-
-Based on the current repository state:
-
-- There is no `.env.example` file.
-- There are no migration files.
-- There is no container setup.
-- Rate limiting exists but is currently commented out in session permission execution.
-- Some error messages and comments are still written in Portuguese in the application code.
-- The root app title and some schema naming are still partially inconsistent (`Graphql`, `Graph API`, `graphql`).
-
-## Useful Files
-
-- [`app/main.py`](/home/matheus-silva-oliveira/Área%20de%20trabalho/graph/app/main.py)
-- [`schema.graphql`](/home/matheus-silva-oliveira/Área%20de%20trabalho/graph/schema.graphql)
-- [`auth.graphql`](/home/matheus-silva-oliveira/Área%20de%20trabalho/graph/auth.graphql)
-- [`app/repositories/user_repository.py`](/home/matheus-silva-oliveira/Área%20de%20trabalho/graph/app/repositories/user_repository.py)
-- [`app/graphql/mutations/user_mutation.py`](/home/matheus-silva-oliveira/Área%20de%20trabalho/graph/app/graphql/mutations/user_mutation.py)
-- [`app/graphql/mutations/admin_mutation.py`](/home/matheus-silva-oliveira/Área%20de%20trabalho/graph/app/graphql/mutations/admin_mutation.py)
-- [`app/graphql/permissions/session_permission.py`](/home/matheus-silva-oliveira/Área%20de%20trabalho/graph/app/graphql/permissions/session_permission.py)
-- [`app/graphql/permissions/routers_protects_permission.py`](/home/matheus-silva-oliveira/Área%20de%20trabalho/graph/app/graphql/permissions/routers_protects_permission.py)
-
-## Summary
-
-This repository is a compact authentication-oriented GraphQL backend with:
-
-- JWT-based signed tokens
-- Redis-backed temporary auth state
-- PostgreSQL user persistence
-- Role-based GraphQL protection
-- Hooks for external notification delivery
-
-It is a good base for authentication-heavy internal systems, admin panels, or service-to-service GraphQL backends that need API key and session-based protection together.
