@@ -1,5 +1,5 @@
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
-from sqlalchemy import select, delete, func, and_
+from sqlalchemy import select, delete, and_
 from typing import List
 from datetime import datetime, time, timedelta
 from fastapi.concurrency import run_in_threadpool
@@ -28,6 +28,8 @@ from app.exceptions import (
 from app.services import HashPassword
 
 class UserRepository:
+
+
     async def create_user(self, create_user: UserCreateModel) -> UserReadModel:
         async with AsyncSession() as session:
             query = await session.execute(
@@ -97,6 +99,7 @@ class UserRepository:
             
             return UserReadModel.model_validate(user)
     
+
     async def get_user_by_email(self, login: UserLoginModel) -> UserReadModel:
         async with AsyncSession() as session:
             query = await session.execute(
@@ -112,9 +115,9 @@ class UserRepository:
     
             return UserReadModel.model_validate(user)    
 
+
     async def update_user(self, user_update: UserUpdateModel) -> UserReadModel:
         async with AsyncSession() as session:
-
             try:
                 query = await session.execute(
                     select(User).where(
@@ -136,8 +139,9 @@ class UserRepository:
                 for key, value in user_update.model_dump().items():
                     if value is not None:
                         setattr(user, key, value)
-                    await session.commit()
-                    return UserReadModel.model_validate(user)
+
+                await session.commit()
+                return UserReadModel.model_validate(user)
             
             except IntegrityError:
                 await session.rollback()
@@ -181,7 +185,7 @@ class UserRepository:
             
             offset = (page - 1) * limit
 
-            list_query = query.order_by(User.createdAt.desc()).offset(offset).limit(limit + 1)
+            list_query = query.order_by(User.createdAt.desc()).offset(offset).limit(limit)
 
             if filters:
                 list_query = list_query.where(and_(*filters))
@@ -191,15 +195,7 @@ class UserRepository:
             )
             rows = stmt.all()
             
-            has_next = len(rows) > limit
-            items = rows[:limit]
-
-            return UserListModel(
-                items=[UserReadModel.model_validate(u) for u in items],
-                page=page,
-                limit=limit,
-                hasNextPage=has_next
-            )
+            return UserListModel.model_validate([UserReadModel.model_validate(u) for u in rows])
 
 
     async def delete_user(self, user_id: str) -> None:
@@ -226,6 +222,7 @@ class UserRepository:
                 await session.rollback()
                 raise exc
 
+
     async def delete_inactive_users(self) -> None:
         async with AsyncSession() as session:
             try:
@@ -240,16 +237,6 @@ class UserRepository:
                 raise exc
             
     # Others methods for count rows
-
-    async def __count_rows(self, session, filters: List[bool] = None) -> int:
-        count_query = select(func.count()).select_from(User)
-
-        if filters:
-            count_query = count_query.where(and_(*filters))
-
-        total = await session.scalar(count_query)
-        return total or 0
-
     def __filters_by(self, filter_by: FilterByModel = None) -> List[bool]:
         filters = []
 
@@ -271,16 +258,15 @@ class UserRepository:
             filters.append(
                 User.role == filter_by.role
             )
-
+    
         if filter_by.createdAt:
             start = datetime.combine(filter_by.createdAt, time.min)
             end = start + timedelta(days=1)
-
             filters.append(
                 User.createdAt >= start
             )
             filters.append(
                 User.createdAt < end
             )
-
+        
         return filters

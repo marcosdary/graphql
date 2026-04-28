@@ -76,11 +76,7 @@ type ApiKeyType {
 }
 
 type UserListType {
-    items: [UserPrivateType]
-    total: Int
-    page: Int
-    limit: Int
-    hasNextPage: Boolean
+    root: [UserPrivateType]
 }
 
 type PasswordResetType {

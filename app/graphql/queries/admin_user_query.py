@@ -45,7 +45,7 @@ class AdminUserQuery:
                 filter_by=filter_by, 
                 pagination=pagination
             )
-            
+            print(data.model_dump_json(indent=4))
             return data
         
         except Exception as exc:

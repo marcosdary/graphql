@@ -100,11 +100,7 @@ O schema esta organizado em:
 
 | Campo | Tipo | Descricao |
 | --- | --- | --- |
-| `items` | `[UserPrivateType]` | Lista de usuarios retornados |
-| `total` | `Int` | Total de registros |
-| `page` | `Int` | Pagina atual |
-| `limit` | `Int` | Limite por pagina |
-| `hasNextPage` | `Boolean` | Indica se existem mais paginas |
+| `root` | `[UserPrivateType]` | Lista de usuarios retornados |
 
 ## Inputs
 

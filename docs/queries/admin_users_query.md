@@ -30,8 +30,7 @@ query ListUsersSchema($input: ListInput!){
     admin {
         users {
             list (input: $input){
-                success
-                items {
+                root {
                     userId
                     name 
                     email
@@ -40,11 +39,7 @@ query ListUsersSchema($input: ListInput!){
                     isDeleted,
                     createdAt,
                     updatedAt
-                }
-                total
-                page
-                limit
-                hasNextPage     
+                }    
             }
         }
         
@@ -103,7 +98,7 @@ Todas as operações deste projeto retornam um `ApiResponseType[Sucesso, ApiErro
         "admin": {
             "users": {
                 "list": {
-                    "items": [
+                    "root": [
                         {
                             "userId": "2caafd25-a9d9-4a63-8ffb-27db1febc506",
                             "name": "Kiss Martin",
@@ -114,11 +109,7 @@ Todas as operações deste projeto retornam um `ApiResponseType[Sucesso, ApiErro
                             "createdAt": 1776945291.11555,
                             "updatedAt": 1776945291.115559
                         }
-                    ],
-                    "total": 16,
-                    "page": 1,
-                    "limit": 1,
-                    "hasNextPage": true
+                    ]
                 }
             }
         }

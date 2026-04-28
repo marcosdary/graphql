@@ -144,6 +144,8 @@ class AuthMutation:
                 payload={"token": data_pydantic.token}
             )
             userId = decode.get("userId")
+
+            print(userId)
             
             user_repo = UserRepository()
 

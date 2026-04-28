@@ -4,12 +4,6 @@ from strawberry.exceptions import StrawberryGraphQLError
 from app.services.token import ApiKeyService
 
 class ApiKeyPermission(BasePermission):
-    message = "Rota protegida. Forneça sua API Key."
-    error_extensions = {
-        "code": "UNAUTHORIZED",
-        "permission": "API_KEY",
-        "statusCode": 401,
-    }
 
     def __init__(self):
         self._api_key_service = ApiKeyService()
