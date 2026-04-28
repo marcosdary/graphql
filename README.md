@@ -34,6 +34,7 @@ A camada GraphQL suporta:
 - PyJWT
 - Pydantic / pydantic-settings
 - Uvicorn
+- Gunicorn
 
 ## Arquitetura
 
@@ -41,6 +42,7 @@ O código está organizado em uma estrutura em camadas bastante padrão:
 
 - `app/main.py`: Inicialização da aplicação FastAPI, configuração de CORS, roteador de webhook e roteador GraphQL
 - `app/config/`: Configurações de ambiente, engines do banco de dados e clientes Redis
+- `app/constants/`: Constantes do ambiente, representados por enum.
 - `app/models/`: Modelos SQLAlchemy
 - `app/dto/`: Modelos Pydantic usados entre as camadas
 - `app/repositories/`: Lógica de acesso e persistência no banco de dados
@@ -110,8 +112,6 @@ O modelo atual do banco de dados inclui a tabela `users` com:
 - `createdAt`
 - `updatedAt`
 
-A exclusão é lógica nos fluxos normais de usuário: `delete_user` apenas marca `isDeleted = True`.
-
 Existe um helper no repositório para remover fisicamente usuários inativos, mas ele não está exposto pela API pública no momento.
 
 ## Uso do Redis
@@ -134,24 +134,24 @@ Tempos de expiração atualmente definidos no código:
 
 ### Queries
 
-- `getUser`
-- `listUsers(page: Int = 1, limit: Int = 10)`
-- `getByIdUser(userId: String!)`
+- `account.me`
+- `admin.users.list`
+- `admin.users.getById`
 
 ### Mutations
 
-- `create`
-- `login`
-- `verifyTwoFactor`
-- `update`
-- `delete`
-- `forgotPassword`
-- `resetPassword`
-- `createApiKey`
-- `createUserByAdmin`
-- `updateUserByAdmin`
-- `deleteUserByAdmin`
-- `deleteApiKey`
+- `auth.register`
+- `auth.login`
+- `auth.verifyTwoFactor`
+- `account.update`
+- `account.delete`
+- `auth.forgotPassword`
+- `auth.resetPassword`
+- `admin.apikey.create`
+- `admin.users.create`
+- `admin.users.update`
+- `admin.users.delete`
+- `admin.apikey.delete`
 
 ### Principais Tipos GraphQL
 
@@ -173,21 +173,9 @@ Dependendo do resolver, a API pode exigir um ou ambos os headers abaixo:
 Proteção dos resolvers na prática:
 
 - Públicos: `login`, `verifyTwoFactor`, `forgotPassword`, `resetPassword`
-- Apenas chave de API: `create`
-- Chave de API + sessão: `getUser`, `update`, `delete`
-- Rotas com sessão protegidas por role: `listUsers`, `getByIdUser`, `createApiKey`, `createUserByAdmin`, `updateUserByAdmin`, `deleteUserByAdmin`, `deleteApiKey`
-
-## Exemplos de Fluxos GraphQL
-
-Existem operações de exemplo no arquivo [`auth.graphql`](/home/matheus-silva-oliveira/Área%20de%20trabalho/graph/auth.graphql), que é um bom ponto de partida para testes manuais.
-
-Fluxo típico de login:
-
-1. Chamar `login` com e-mail e senha.
-2. Ler o `token` e o `number` retornados no `TwoFactorAuthType`.
-3. Chamar `verifyTwoFactor` com esses valores.
-4. Armazenar o `sessionId` retornado.
-5. Usar o `session-id` nas chamadas protegidas subsequentes.
+- Apenas chave de API: `auth.register`, `auth.login`, `auth.verifyTwoFactor`, `auth.resetPassword`
+- Chave de API + sessão: `account.me`, `account.update`, `account.delete`
+- Rotas com sessão protegidas por role: `admin.apikey.create`, `admin.users.create`, `admin.users.update`, `admin.users.delete`, `admin.apikey.delete`, `admin.users.list`, `admin.users.getById`
 
 ## Variáveis de Ambiente
 
