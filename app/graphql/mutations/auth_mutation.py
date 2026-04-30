@@ -4,9 +4,6 @@ from strawberry.exceptions import StrawberryGraphQLError
 # Repository
 from app.repositories.user_repository import UserRepository
 
-# Settings
-from app.constants import SendType, ExpirationAt
-
 # DTOs
 from app.dto.user import UserUpdateModel
 
@@ -23,6 +20,10 @@ from app.graphql.inputs import (
 from app.graphql.permissions import (
     ApiKeyPermission,
 )
+
+# Constants
+from app.core.constants import ExpirationTimes
+
 
 # Responses
 from app.graphql.utils import build_extensions, create_session
@@ -59,7 +60,7 @@ class AuthMutation:
             )
 
     @strawberry.mutation
-    async def login(self, info: strawberry.Info, schema: UserLoginInput) -> TwoFactorAuthType:
+    async def login(self, schema: UserLoginInput) -> TwoFactorAuthType:
         try:
             user = schema.to_pydantic()
             user_repo = UserRepository()
@@ -67,16 +68,10 @@ class AuthMutation:
            
             two_factor_auth_service = token.TwoFactorAuthService()
 
-            create = await two_factor_auth_service.create_two_factor_token(
+            return await two_factor_auth_service.create_two_factor_token(
                 userId=data.userId,
                 role=data.role
             )
-
-            response = info.context["response"]
-
-            response.headers["X-2FA-Required"] = "true"
-            response.headers["X-2FA-Expires-At"] = create.expiresAt.strftime("%a, %d %b %Y %H:%M:%S GMT")
-            return create
         
         except Exception as exc:
             raise StrawberryGraphQLError(
@@ -86,19 +81,15 @@ class AuthMutation:
     
 
     @strawberry.mutation
-    async def verifyTwoFactor(self, info: strawberry.Info, schema: Verify2FAInput) -> SessionType:
+    async def verifyTwoFactor(self, schema: Verify2FAInput) -> SessionType:
         try:
             two_fa = schema.to_pydantic()
             two_factor_auth_service = token.TwoFactorAuthService()
             data = await two_factor_auth_service.verify_two_factor_token(token=two_fa.token, number=two_fa.number)
             session_new = await create_session(
-                userId=data.get("userId"), 
+                userId=data.get("sub"), 
                 role=data.get("role")
             )
-            
-            response = info.context["response"]
-            response.headers["X-Auth-Status"] = "authenticated"
-            response.headers["X-Session-Expires-At"] = session_new.expiresAt.strftime("%a, %d %b %Y %H:%M:%S GMT")
             return session_new
     
         except Exception as exc:
@@ -144,8 +135,6 @@ class AuthMutation:
                 payload={"token": data_pydantic.token}
             )
             userId = decode.get("userId")
-
-            print(userId)
             
             user_repo = UserRepository()
 

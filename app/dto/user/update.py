@@ -1,8 +1,8 @@
 from pydantic import field_serializer
 
 from app.dto.user.model import UserModel
-from app.constants import Roles
-from app.services import HashPassword
+from app.core.config import Auth
+from app.core.constants import Roles
 
 
 class UserUpdateModel(UserModel):
@@ -39,5 +39,5 @@ class UserUpdateModel(UserModel):
             str: Senha criptografada ou o valor original se não houver senha.
         """
         if value:
-            return HashPassword.hash_password(value)
+            return Auth.hash_password(value)
         return value

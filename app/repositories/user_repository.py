@@ -15,8 +15,8 @@ from app.dto.user import (
 )
 from app.dto.pagination import PaginationModel
 
-from app.config import AsyncSessionLocal as AsyncSession
-from app.constants import Roles
+from app.core.config import AsyncSessionLocal as AsyncSession, Auth
+from app.core.constants import Roles
 from app.exceptions import (
     DuplicateReviewError,
     NotFoundError,
@@ -24,8 +24,6 @@ from app.exceptions import (
     InvalidCredentialsException,
     ForbiddenActionError
 )
-
-from app.services import HashPassword
 
 class UserRepository:
 
@@ -47,18 +45,7 @@ class UserRepository:
                     "pois só pode ter um único master."
                 )
             
-            hashed_pw = await run_in_threadpool(
-                HashPassword().hash_password, 
-                create_user.password
-            )
-            
-            user_data = (
-                create_user.
-                model_copy(update={"password": hashed_pw}).
-                model_dump()
-            )
-            
-            new_user = User(**user_data)
+            new_user = User(**create_user.model_dump())
 
             session.add(new_user)
             try:
@@ -89,7 +76,7 @@ class UserRepository:
                 )
             
             is_valid = await run_in_threadpool(
-                HashPassword.verify_password,
+                Auth().verify_password,
                 login.password, 
                 user.password
             )

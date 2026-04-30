@@ -1,6 +1,10 @@
 from bcrypt import hashpw, checkpw, gensalt
+import hmac
+import hashlib
 
-class HashPassword:
+from app.core.config.settings import settings
+
+class Auth:
     """Classe utilitária para hash e verificação de senhas usando bcrypt.
 
     Fornece métodos para gerar hashes seguros de senhas e verificar
@@ -31,3 +35,18 @@ class HashPassword:
             bool: True se a senha corresponde ao hash, False caso contrário.
         """
         return checkpw(plain.encode(), hashed.encode())
+
+    @staticmethod
+    def hash_code(code: str) -> str:
+        return hmac.new(
+            settings.TWO_FACTOR_AUTH_KEY.encode(),
+            code.encode(),
+            hashlib.sha256
+        ).hexdigest()
+    
+
+    @staticmethod
+    def verify_code(code: str, code_hash: str) -> bool:
+        hash_compare = Auth.hash_code(code)
+        return hmac.compare_digest(hash_compare, code_hash)
+    

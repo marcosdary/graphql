@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 
 from app.services.token.base import BaseService
-from app.config import settings
+from app.core.config import settings
 from app.dto.api_key import ApiKeyRead
 from app.exceptions import ExpirationError
 

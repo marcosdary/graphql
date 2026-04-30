@@ -1,6 +1,5 @@
 import strawberry
 from strawberry.exceptions import StrawberryGraphQLError
-from typing import Optional
 
 # Repository
 from app.repositories.user_repository import UserRepository

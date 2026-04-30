@@ -1,7 +1,7 @@
 from redis import Redis as RedisSync
 from redis.asyncio import Redis 
 
-from app.config.settings import settings
+from app.core.config.settings import settings
 
 redis_client = RedisSync.from_url(
     url=settings.REDIS_URL, 

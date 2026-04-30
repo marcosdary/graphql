@@ -1,10 +1,9 @@
 from fastapi import Request, Response
+from datetime import datetime, timedelta
+from zoneinfo import ZoneInfo
+from app.services import token
+from app.core.constants import ExpirationTimes
 
-from app.constants import SendType, ExpirationAt
-from app.services import token, queries
-from app.dto.notification_system import (
-    NotificationSystemCreateModel
-)
 
 def build_extensions(exc: Exception) -> dict:
     """Converte o padrão `build_response` para `GraphQLError.extensions`.
@@ -20,31 +19,15 @@ def build_extensions(exc: Exception) -> dict:
 
 async def create_session(userId: str, role: str):
     session_service = token.SessionService()
+    sp = ZoneInfo("America/Sao_Paulo")
+    exp = datetime.now(tz=sp) + timedelta(minutes=ExpirationTimes.SESSION_EXPIRATION.value)
     return await session_service.create_session(
-        userId=userId, 
-        role=role
+        sub=userId, # subject, quem é o dono/assunto do token, normalmente o ID do usuário.
+        exp=exp.timestamp(), # expiration time, quando o token expira.
+        iat=datetime.now(tz=sp).timestamp(), # issued at, quando o token foi emitido.
+        role=role, # papel do usuário,
+        scope="authenticated"
     )
-
-async def send_notification_to_email(
-    recipient_email: str, 
-    send_type: SendType, 
-    expires_at: ExpirationAt = None,
-    token: str = None, 
-    code: str = None, 
-    action_link: str = None
-) -> None:
-    notification_system_service = queries.NotificationSystemService()
-
-    schema = NotificationSystemCreateModel(
-        recipientEmail=recipient_email,
-        sendType=send_type,
-        actionLink=action_link,
-        token=token,
-        code=code,
-        expiresAt=expires_at
-    )
-
-    await notification_system_service.create(schema)
 
 async def get_context(request: Request, response: Response):
     return {

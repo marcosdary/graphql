@@ -1,6 +1,6 @@
 import jwt
 
-from app.config import redis_client_async
+from app.core.config import redis_client_async
 
 class BaseService:
 

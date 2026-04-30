@@ -17,21 +17,3 @@ class SessionModel(BaseModel):
     """
 
     sessionId: str
-    createdAt: datetime
-    expiresAt: datetime
-
-    @field_serializer("createdAt", "expiresAt", mode="plain")
-    def serialize_dates(self, value: datetime | None) -> str | None:
-        """
-        Serializa objetos datetime em strings no formato ISO 8601.
-
-        Args:
-            value (datetime | None): Data/hora a ser serializada.
-
-        Returns:
-            str | None: Data/hora convertida para string ISO 8601 ou None
-                caso o valor seja None.
-        """
-        if value is None:
-            return None
-        return value.isoformat()

@@ -1,4 +1,4 @@
-from app.config import redis_client
+from app.core.config import redis_client
 from app.exceptions import TooManyRequestsError
 
 def check_rate_limit(ipUser: str) -> None:

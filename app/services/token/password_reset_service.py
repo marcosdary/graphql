@@ -3,8 +3,8 @@ import jwt
 from random import randint
 
 from app.services.token.base import BaseService
-from app.config import settings
-from app.constants import ExpirationTimes
+from app.core.config import settings
+from app.core.constants import ExpirationTimes
 from app.dto.password_reset import PasswordResetModel
 from app.exceptions import UnprocessableEntity, InvalidFieldsException
 

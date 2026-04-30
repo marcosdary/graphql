@@ -1,5 +1,4 @@
 import strawberry
-from typing import Optional
 from strawberry.exceptions import StrawberryGraphQLError
 
 # Inputs

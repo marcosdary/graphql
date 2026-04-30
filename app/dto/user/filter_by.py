@@ -1,6 +1,6 @@
 from datetime import date
 
-from app.constants import Roles
+from app.core.constants import Roles
 from app.dto.user.model import UserModel
 
 class FilterByModel(UserModel):

@@ -16,9 +16,9 @@ class ExpirationApiKey(Enum):
 class ExpirationTimes(Enum):
     """Enumeração de tempos de expiração para sessões e tokens."""
 
-    SESSION_EXPIRATION = 10_800  # 3 horas
-    TWO_FA_EXPIRATION = 600       # 10 minutos
-    PASSWORD_RESET_EXPIRATION = 900  # 15 minutos
+    SESSION_EXPIRATION = 60 * 3
+    TWO_FA_EXPIRATION = 5       # 10 minutos
+    PASSWORD_RESET_EXPIRATION = 15 # 15 minutos
 
 class Roles(Enum):
     """Enumeração de papéis de usuário."""
@@ -27,14 +27,4 @@ class Roles(Enum):
     ADMIN = "ADMIN"
     SUPER_ADMIN = "SUPER_ADMIN"
 
-class SendType(Enum):
-    REGISTER = "REGISTER"
-    PASSWORD_CHANGE = "PASSWORD_CHANGE"
-    TWO_FACTOR_AUTH = "TWO_FACTOR_AUTH"
-    PASSWORD_RESET = "PASSWORD_RESET"
 
-class ExpirationAt(Enum):
-    TEN_MINUTES     = "TEN_MINUTES"
-    FIFTEEN_MINUTES = "FIFTEEN_MINUTES"
-    TWENTY_MINUTES  = "TWENTY_MINUTES"
-    ONE_HOUR        = "ONE_HOUR"

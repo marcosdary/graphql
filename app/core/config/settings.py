@@ -19,9 +19,7 @@ class Settings(BaseSettings):
     SESSION_KEY: str
 
     API_KEY: str
-    URL_NOTIFICATION_SYSTEM: str
-    
-    WEBHOOK_SECRET: str
+    ALGORITHM: str
 
 
 @lru_cache(maxsize=1)

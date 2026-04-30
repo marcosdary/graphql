@@ -35,8 +35,10 @@ class SessionPermission(BasePermission):
             
             response = await self._session_service.verify_session(session_id=session_id)
 
+            print(response)
+
             if params.get("logout") == "true":
-                await self._session_service.delete_session(session_id)
+                return True
             
             info.context["user"] = response
             return True

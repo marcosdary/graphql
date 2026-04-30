@@ -1,7 +1,7 @@
 from strawberry.permission import BasePermission
 from strawberry.exceptions import StrawberryGraphQLError
 
-from app.constants import Roles
+from app.core.constants import Roles
 from app.exceptions import ProtectedRouteError
 
 async def check_roles(role: str) -> None:

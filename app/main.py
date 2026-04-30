@@ -10,7 +10,6 @@ from app.graphql.mutation import Mutation
 from app.midlleware import ApiKeyMidlleware
 
 from app.graphql.utils import get_context
-from app.routes import webhook_route
 
 app = FastAPI(title="API do graphql")
 
@@ -22,8 +21,6 @@ app.add_middleware(
 )
 
 app.add_middleware(ApiKeyMidlleware)
-
-app.include_router(webhook_route.router)
 
 schema = strawberry.Schema(
     query=Query, 
