@@ -34,10 +34,7 @@ class AdminApiKeyMutation:
             return await api_key_service.generate_api_key(data.expiration.value, **user)
         
         except Exception as exc:
-            raise StrawberryGraphQLError(
-                message=str(exc),
-                extensions=build_extensions(exc)
-            )
+            raise StrawberryGraphQLError(message=str(exc))
     
     @strawberry.mutation(permission_classes=[SessionPermission, RolePermission])
     async def delete(self, key: str) -> None:
@@ -47,7 +44,4 @@ class AdminApiKeyMutation:
             return await api_key_service.delete_api_key(token=key)
         
         except Exception as exc:
-            raise StrawberryGraphQLError(
-                message=str(exc),
-                extensions=build_extensions(exc)
-            )
+            raise StrawberryGraphQLError(message=str(exc))

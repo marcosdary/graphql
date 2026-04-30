@@ -1,5 +1,6 @@
 import strawberry
 from strawberry.exceptions import StrawberryGraphQLError
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
 # Inputs
 from app.graphql.inputs import (
@@ -11,6 +12,9 @@ from app.graphql.inputs import (
 from app.graphql.types.user_type import (
     UserPrivateType
 )
+
+# DTOs
+from app.dto.user import UserReadModel
 
 # Repositories
 from app.repositories import UserRepository
@@ -25,6 +29,15 @@ from app.graphql.permissions import (
     ApiKeyPermission
 )
 
+# Exceptions
+from app.exceptions import (
+    DuplicateReviewError,
+    NotFoundError,
+    EntityValidationError,
+    InvalidCredentialsException,
+    ForbiddenActionError
+)
+
 
 @strawberry.type
 class AdminUserMutation:
@@ -33,48 +46,61 @@ class AdminUserMutation:
     @strawberry.mutation(permission_classes=[ApiKeyPermission, SessionPermission, RolePermission])
     async def create(self, info: strawberry.Info, schema: UserPrivateInput) -> UserPrivateType:
         try:
-            user = schema.to_pydantic()
+            session = info.context["session"]
+           
+            data = schema.to_pydantic()
             
-            user_repo = UserRepository()
-            data = await user_repo.create_user(user)
+            user_repo = UserRepository(session=session)
+            user = await user_repo.create_user(data)
 
-            response = info.context["response"]
-            response.headers["Last-Modified"] = data.createdAt.strftime("%a, %d %b %Y %H:%M:%S GMT")
-            return data
+            await session.commit()
+            return UserReadModel.model_validate(user)
+        
+        except IntegrityError:
+            await session.rollback()
+            raise StrawberryGraphQLError(message="Não foi possível criar o usuário.")
+
+        except DuplicateReviewError as exc:
+            raise StrawberryGraphQLError(message=str(exc))
         
         except Exception as exc:
-            raise StrawberryGraphQLError(
-                message=str(exc),
-                extensions=build_extensions(exc)
-            )
+            await session.rollback()
+            raise StrawberryGraphQLError(message=str(exc))
         
     @strawberry.mutation(permission_classes=[ApiKeyPermission, SessionPermission, RolePermission])
     async def update(self, info: strawberry.Info, schema: UserUpdatePrivateInput) -> UserPrivateType:  
         try:
-            user_update = schema.to_pydantic()
-            user_repo = UserRepository()
-            data = await user_repo.update_user(user_update)
-            response = info.context["response"]
-            response.headers["Last-Modified"] = data.createdAt.strftime("%a, %d %b %Y %H:%M:%S GMT")
-            return data
+            session = info.context["session"]
+
+            data = schema.to_pydantic()
+            user_repo = UserRepository(session=session)
+            user = await user_repo.update_user(data)
+            await session.commit()
+            return UserReadModel.model_validate(user)
         
         except Exception as exc:
-            raise StrawberryGraphQLError(
-                message=str(exc),
-                extensions=build_extensions(exc)
-            )
+            await session.rollback()
+            raise StrawberryGraphQLError(message=str(exc))
 
     @strawberry.mutation(permission_classes=[ApiKeyPermission, SessionPermission, RolePermission])
-    async def delete(self, userId: str) -> None:
+    async def delete(self, info: strawberry.Info, userId: str) -> None:
         try:
-            user_repo = UserRepository()
+            session = info.context["session"]
+            user_repo = UserRepository(session=session)
             await user_repo.delete_user(userId)
+            await session.commit()
             return 
         
+        except SQLAlchemyError as exc:
+            await session.rollback()
+            raise StrawberryGraphQLError(message=str(exc))
+
+        except NotFoundError as exc:
+            await session.rollback()
+            raise StrawberryGraphQLError(message=str(exc))
+        
         except Exception as exc:
-            raise StrawberryGraphQLError(
-                message=str(exc),
-                extensions=build_extensions(exc)
-            )
+            await session.rollback()
+            raise StrawberryGraphQLError(message=str(exc))
     
  

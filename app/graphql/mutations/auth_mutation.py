@@ -1,11 +1,12 @@
 import strawberry
 from strawberry.exceptions import StrawberryGraphQLError
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
 # Repository
 from app.repositories.user_repository import UserRepository
 
 # DTOs
-from app.dto.user import UserUpdateModel
+from app.dto.user import UserUpdateModel, UserReadModel
 
 # Inputs
 from app.graphql.inputs import (
@@ -38,46 +39,62 @@ from app.graphql.types.session_type import SessionType
 # Services
 from app.services import token
 
+# Exceptions
+from app.exceptions import (
+    DuplicateReviewError,
+    NotFoundError,
+    EntityValidationError,
+    InvalidCredentialsException,
+    ForbiddenActionError
+)
+
 @strawberry.type
 class AuthMutation:
 
     @strawberry.mutation(permission_classes=[ApiKeyPermission])
     async def register(self, info: strawberry.Info, schema: UserInput) -> UserPublicType:
         try:
-            user = schema.to_pydantic()
-            user_repo = UserRepository()
+            session = info.context["session"]
+            data = schema.to_pydantic()
+            user_repo = UserRepository(session=session)
             
-            data = await user_repo.create_user(user)
+            user = await user_repo.create_user(data)
+            
+            await session.commit()
+            return UserReadModel.model_validate(user)
+        
+        except IntegrityError:
+            await session.rollback()
+            raise StrawberryGraphQLError(message="Não foi possível criar o usuário.")
 
-            response = info.context["response"]
-            response.headers["Last-Modified"] = data.createdAt.strftime("%a, %d %b %Y %H:%M:%S GMT")
-            return data
+        except DuplicateReviewError as exc:
+            raise StrawberryGraphQLError(message=str(exc))
         
         except Exception as exc:
-            raise StrawberryGraphQLError(
-                message=str(exc),
-                extensions=build_extensions(exc)
-            )
+            await session.rollback()
+            raise StrawberryGraphQLError(message=str(exc))
 
     @strawberry.mutation
-    async def login(self, schema: UserLoginInput) -> TwoFactorAuthType:
+    async def login(self, info: strawberry.Info, schema: UserLoginInput) -> TwoFactorAuthType:
         try:
-            user = schema.to_pydantic()
-            user_repo = UserRepository()
-            data = await user_repo.get_user_by_email_and_password(user)
+            session = info.context["session"]
+            data = schema.to_pydantic()
+            user_repo = UserRepository(session=session)
+
+            user = await user_repo.get_user_by_email_and_password(data)
            
             two_factor_auth_service = token.TwoFactorAuthService()
-
+            print(user.userId, user.role)
             return await two_factor_auth_service.create_two_factor_token(
-                userId=data.userId,
-                role=data.role
+                userId=user.userId,
+                role=user.role.value
             )
         
+        except InvalidCredentialsException as exc:
+            raise StrawberryGraphQLError(message=str(exc))
+        
         except Exception as exc:
-            raise StrawberryGraphQLError(
-                message=str(exc),
-                extensions=build_extensions(exc)
-            )
+            raise StrawberryGraphQLError(message=str(exc))
     
 
     @strawberry.mutation
@@ -93,63 +110,73 @@ class AuthMutation:
             return session_new
     
         except Exception as exc:
-            raise StrawberryGraphQLError(
-                message=str(exc),
-                extensions=build_extensions(exc)
-            )
+            raise StrawberryGraphQLError(message=str(exc))
 
 
     @strawberry.mutation
-    async def forgotPassword(self, schema: ForgotPasswordInput) -> PasswordResetType:
+    async def forgotPassword(self, info: strawberry.Info, schema: ForgotPasswordInput) -> PasswordResetType:
         try:
+            session = info.context["session"]
             schema = schema.to_pydantic()
 
             password_reset_service = token.PasswordResetService()
 
-            user_repo = UserRepository()
-            data = await user_repo.get_user_by_email(schema)
+            user_repo = UserRepository(session=session)
+            user = await user_repo.get_user_by_email(schema)
     
             forgot = await password_reset_service.handle(
                 action="forgot", 
                 payload={
-                    "userId": data.userId
+                    "userId": user.userId
                 }
             )
             
             return forgot
         
+        except InvalidCredentialsException as exc:
+            raise StrawberryGraphQLError(message=str(exc))
+        
         except Exception as exc:
-            raise StrawberryGraphQLError(
-                message=str(exc),
-                extensions=build_extensions(exc)
-            )
+            raise StrawberryGraphQLError(message=str(exc))
 
 
     @strawberry.mutation
-    async def resetPassword(self, schema: UserResetPasswordInput) -> UserPublicType:
+    async def resetPassword(self, info: strawberry.Info, schema: UserResetPasswordInput) -> UserPublicType:
         try:
-            data_pydantic = schema.to_pydantic()
+            session = info.context["session"]
+
+            data = schema.to_pydantic()
             password_reset_service = token.PasswordResetService()
+            
             decode = await password_reset_service.handle(
                 action="reset", 
-                payload={"token": data_pydantic.token}
+                payload={"token": data.token}
             )
             userId = decode.get("userId")
             
-            user_repo = UserRepository()
+            user_repo = UserRepository(session=session)
 
-            data = await user_repo.update_user( 
+            user = await user_repo.update_user( 
                 user_update=UserUpdateModel(
                     userId=userId,
-                    password=data_pydantic.password
+                    password=data.password
                 )
             )
             
-            return data
+            await session.commit()
+            return UserReadModel.model_validate(user)
+        
+        except IntegrityError:
+            await session.rollback()
+            raise StrawberryGraphQLError(message="Não foi possível criar o usuário.")
+        
+        except DuplicateReviewError as exc:
+            raise StrawberryGraphQLError(message=str(exc))
+        
+        except NotFoundError as exc:
+            raise StrawberryGraphQLError(message=str(exc))
         
         except Exception as exc:
-            raise StrawberryGraphQLError(
-                message=str(exc),
-                extensions=build_extensions(exc)
-            )
+            await session.rollback()
+            raise StrawberryGraphQLError(message=str(exc))
         

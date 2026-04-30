@@ -35,7 +35,6 @@ class SessionPermission(BasePermission):
             
             response = await self._session_service.verify_session(session_id=session_id)
 
-            print(response)
 
             if params.get("logout") == "true":
                 return True
@@ -44,7 +43,4 @@ class SessionPermission(BasePermission):
             return True
         
         except Exception as exc:
-            raise StrawberryGraphQLError(str(exc), extensions={
-                "typeError": exc.__class__.__name__,
-                "statusCode": getattr(exc, "status_code", 500)
-            })
+            raise StrawberryGraphQLError(str(exc))

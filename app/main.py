@@ -1,7 +1,5 @@
 from fastapi import FastAPI
 import strawberry
-from datetime import datetime, timezone
-from strawberry.schema.config import StrawberryConfig
 from strawberry.fastapi import GraphQLRouter
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -37,4 +35,3 @@ def index():
         "version": "1.0.0",
         "name": "Graphql"
     }
-

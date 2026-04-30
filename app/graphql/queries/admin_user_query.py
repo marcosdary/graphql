@@ -8,6 +8,9 @@ from typing import Optional
 # Repository
 from app.repositories.user_repository import UserRepository
 
+# DTOs
+from app.dto.user import UserReadModel, UserListModel
+
 # Permissions
 from app.graphql.permissions import (
     SessionPermission,
@@ -27,6 +30,14 @@ from app.graphql.inputs import (
 # Types
 from app.graphql.types.user_type import UserListType, UserPrivateType
 
+# Exceptions
+from app.exceptions import (
+    DuplicateReviewError,
+    NotFoundError,
+    EntityValidationError,
+    InvalidCredentialsException,
+    ForbiddenActionError
+)
 
 @strawberry.type
 class AdminUserQuery:
@@ -34,41 +45,41 @@ class AdminUserQuery:
     @strawberry.field(permission_classes=[ApiKeyPermission, SessionPermission, RolePermission], extensions=[InputMutationExtension()])
     async def list(
         self, 
+        info: strawberry.Info,
         pagination: PaginationInput, 
         filterBy: Optional[FilterByInput] = None
     ) -> UserListType:
         try:
-            user_repo = UserRepository()
+            session = info.context["session"]
+
+            user_repo = UserRepository(session=session)
+            
             pagination = pagination.to_pydantic()
             filter_by = filterBy.to_pydantic() if filterBy else None
-            data = await user_repo.list_users(
+            users = await user_repo.list_users(
                 filter_by=filter_by, 
                 pagination=pagination
             )
-            print(data.model_dump_json(indent=4))
-            return data
+            
+            return UserListModel.model_validate([UserReadModel.model_validate(u) for u in users])
         
         except Exception as exc:
-            raise StrawberryGraphQLError(
-                message=str(exc),
-                extensions=build_extensions(exc)
-            )
+            raise StrawberryGraphQLError(message=str(exc))
                 
         
     @strawberry.field(permission_classes=[ApiKeyPermission, SessionPermission, RolePermission])
-    async def getById(self, userId: str) -> UserPrivateType:
+    async def getById(self, info: strawberry.Info, userId: str) -> UserPrivateType:
         try:
-            user_repo = UserRepository()
+            session = info.context["session"]
 
-            data = await user_repo.get_user_by_id(user_id=userId)
+            user_repo = UserRepository(session=session)
+
+            user = await user_repo.get_user_by_id(user_id=userId)
             
-            return data
+            return UserReadModel.model_validate(user)
 
         except Exception as exc:
-            raise StrawberryGraphQLError(
-                message=str(exc),
-                extensions=build_extensions(exc)
-            )
+            raise StrawberryGraphQLError( message=str(exc))
         
         
     

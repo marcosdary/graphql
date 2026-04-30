@@ -1,10 +1,14 @@
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, delete, and_
 from typing import List
 from datetime import datetime, time, timedelta
 from fastapi.concurrency import run_in_threadpool
 
+# Model
 from app.models import User
+
+# DTOs
 from app.dto.user import (
     UserCreateModel,
     UserReadModel,
@@ -15,8 +19,11 @@ from app.dto.user import (
 )
 from app.dto.pagination import PaginationModel
 
-from app.core.config import AsyncSessionLocal as AsyncSession, Auth
+# Core
+from app.core.config import Auth
 from app.core.constants import Roles
+
+# Exceptions
 from app.exceptions import (
     DuplicateReviewError,
     NotFoundError,
@@ -25,203 +32,177 @@ from app.exceptions import (
     ForbiddenActionError
 )
 
+
 class UserRepository:
 
+    def __init__(self, session: AsyncSession):
+        self.session = session
 
-    async def create_user(self, create_user: UserCreateModel) -> UserReadModel:
-        async with AsyncSession() as session:
-            query = await session.execute(
-                select(User.email).where(User.email == create_user.email)
+
+    async def create_user(self, create_user: UserCreateModel) -> User:
+        
+        query = await self.session.execute(
+            select(User.email).where(User.email == create_user.email)
+        )
+
+        email_exists = query.first()
+
+        if email_exists:
+            raise DuplicateReviewError("Email está em uso.")
+
+        if create_user.role == Roles.SUPER_ADMIN:
+            raise DuplicateReviewError(
+                "Registro de Administrador negado, " \
+                "pois só pode ter um único master."
             )
-
-            email_exists = query.first()
-
-            if email_exists:
-                raise DuplicateReviewError("Email está em uso.")
-
-            if create_user.role == Roles.SUPER_ADMIN:
-                raise DuplicateReviewError(
-                    "Registro de Administrador negado, " \
-                    "pois só pode ter um único master."
-                )
             
-            new_user = User(**create_user.model_dump())
+        new_user = User(**create_user.model_dump())
 
-            session.add(new_user)
-            try:
-                await session.commit()
-                return UserReadModel.model_validate(new_user)
-            
-            except IntegrityError:
-                await session.rollback()
-                raise EntityValidationError("Não foi possível criar o usuário.")
-            
-            except SQLAlchemyError as exc:
-                await session.rollback()
-                raise exc
-            
+        self.session.add(new_user)
+        return new_user
 
-    async def get_user_by_email_and_password(self, login: UserLoginModel) -> UserReadModel:
-        async with AsyncSession() as session:
-            query = await session.execute(
-                select(User.userId, User.email, User.role, User.password).where(User.email == login.email)
+    async def get_user_by_email_and_password(self, login: UserLoginModel) -> User:
+        
+        query = await self.session.execute(
+            select(User.userId, User.email, User.role, User.password).where(User.email == login.email)
+        )
+
+        user = query.first()
+            
+        if not user:
+            raise InvalidCredentialsException(
+                "E-mail ou senha inválidos. " \
+                "Em dúvida, entre em contato com suporte."
             )
+            
+        is_valid = await run_in_threadpool(
+            Auth().verify_password,
+            login.password, 
+            user.password
+        )
 
-            user = query.first()
+        if not is_valid:
+            raise InvalidCredentialsException("E-mail ou senha inválidos..")
             
-            if not user:
-                raise InvalidCredentialsException(
-                    "E-mail ou senha inválidos. " \
-                    "Em dúvida, entre em contato com suporte."
-                )
-            
-            is_valid = await run_in_threadpool(
-                Auth().verify_password,
-                login.password, 
-                user.password
-            )
-
-            if not is_valid:
-                raise InvalidCredentialsException("E-mail ou senha inválidos..")
-            
-            return UserReadModel.model_validate(user)
+        return user
     
 
-    async def get_user_by_email(self, login: UserLoginModel) -> UserReadModel:
-        async with AsyncSession() as session:
-            query = await session.execute(
-                select(User.userId, User.email).where(
-                    User.email==login.email, 
-                    User.isDeleted != True
-                )
+    async def get_user_by_email(self, login: UserLoginModel) -> User:
+       
+        user = await self.session.scalar(
+            select(User.userId, User.email).where(
+                User.email==login.email, 
+                User.isDeleted != True
             )
-            user = query.first()
+        )
             
-            if not user:
-                raise InvalidCredentialsException("E-mail ou senha inválidos ou não cadastrados ou apagados.")
+        if not user:
+            raise InvalidCredentialsException("E-mail ou senha inválidos ou não cadastrados ou apagados.")
     
-            return UserReadModel.model_validate(user)    
+        return user 
 
 
-    async def update_user(self, user_update: UserUpdateModel) -> UserReadModel:
-        async with AsyncSession() as session:
-            try:
-                query = await session.execute(
-                    select(User).where(
-                        User.userId==user_update.userId, 
-                        User.isDeleted != True
-                    )
-                )
-                user = query.scalars().first()
+    async def update_user(self, user_update: UserUpdateModel) -> User:
+     
+       
+        user = await self.session.scalar(
+            select(User).where(
+                User.userId==user_update.userId, 
+                User.isDeleted != True
+            )
+        )
+                    
+        if not user:
+            raise NotFoundError("Usuário não encontrado ou removido do sistema.")
                 
-                if not user:
-                    raise NotFoundError("Usuário não encontrado ou removido do sistema.")
-                
-                if user_update.role == Roles.SUPER_ADMIN:
-                    raise DuplicateReviewError(
-                        "Registro de Administrador negado, pois só pode ter um único master. " \
-                        "Entre em contato com o suporte para potenciais mudanças."
-                    )
-
-                for key, value in user_update.model_dump().items():
-                    if value is not None:
-                        setattr(user, key, value)
-
-                await session.commit()
-                return UserReadModel.model_validate(user)
-            
-            except IntegrityError:
-                await session.rollback()
-                raise EntityValidationError("Não foi possível atualizar o usuário.")
-            
-            except SQLAlchemyError as exc:
-                await session.rollback()
-                raise exc
-            
-
-    async def get_user_by_id(self, user_id: str) -> UserReadModel:
-        async with AsyncSession() as session:
-            query = await session.execute(
-                select(User).where(User.userId == user_id)
+        if user_update.role == Roles.SUPER_ADMIN:
+            raise DuplicateReviewError(
+                "Registro de Administrador negado, pois só pode ter um único master. " \
+                "Entre em contato com o suporte para potenciais mudanças."
             )
 
-            user = query.scalars().first()
+        for key, value in user_update.model_dump().items():
+            if value is not None:
+                setattr(user, key, value)
             
-            if not user:
-                raise NotFoundError("Usuário não encontrado.")
+        return user
+            
 
-            return UserReadModel.model_validate(user)
+    async def get_user_by_id(self, user_id: str) -> User:
+       
+
+        user = await self.session.scalar(
+            select(User).where(User.userId == user_id)
+        )
+            
+        if not user:
+            raise NotFoundError("Usuário não encontrado.")
+
+        return user
         
         
-    async def list_users(self, pagination: PaginationModel, filter_by: FilterByModel = None) -> UserListModel:
-        async with AsyncSession() as session:
-           
-            query = select(
-                User.userId, User.name, User.email, 
-                User.role, User.isDeleted, User.createdAt, 
-                User.updatedAt
-            )
+    async def list_users(self, pagination: PaginationModel, filter_by: FilterByModel = None) -> List[User]:
+       
+        query = select(
+            User.userId, User.name, User.email, 
+            User.role, User.isDeleted, User.createdAt, 
+            User.updatedAt
+        )
 
-            filters = self.__filters_by(filter_by=filter_by)
+        filters = self.__filters_by(filter_by=filter_by)
             
-            page, limit = 1, 10
+        page, limit = 1, 10
             
-            if not pagination.all_:
-                if pagination.page and pagination.limit:
-                    page, limit = pagination.page, pagination.limit
+        if not pagination.all_:
+            if pagination.page and pagination.limit:
+                page, limit = pagination.page, pagination.limit
             
-            offset = (page - 1) * limit
+        offset = (page - 1) * limit
 
-            list_query = query.order_by(User.createdAt.desc()).offset(offset).limit(limit)
+        list_query = query.order_by(User.createdAt.desc()).offset(offset).limit(limit)
 
-            if filters:
-                list_query = list_query.where(and_(*filters))
+        if filters:
+            list_query = list_query.where(and_(*filters))
             
-            stmt = await session.execute(
-                list_query
-            )
-            rows = stmt.all()
+        stmt = await self.session.execute(
+            list_query
+        )
+
+        rows = stmt.all()
             
-            return UserListModel.model_validate([UserReadModel.model_validate(u) for u in rows])
+        return rows
 
 
     async def delete_user(self, user_id: str) -> None:
-        async with AsyncSession() as session:
-            query = await session.execute(
-                select(User).where(User.userId == user_id)
+        
+        user = await self.session.scalar(
+            select(User).where(User.userId == user_id)
+        )
+
+        if not user:
+            raise NotFoundError("Usuário não encontrado.")
+
+        if user.role == Roles.SUPER_ADMIN:
+            raise ForbiddenActionError(
+                "Ação não permitida. Não pode apagar o ADMIN. " \
+                "Por favor, entre em contato com o suporte"
             )
-            user = query.scalars().first()
 
-            if not user:
-                raise NotFoundError("Usuário não encontrado.")
-
-            if user.role == Roles.SUPER_ADMIN:
-                raise ForbiddenActionError(
-                    "Ação não permitida. Não pode apagar o ADMIN. " \
-                    "Por favor, entre em contato com o suporte"
-                )
-
-            await session.delete(user)
-            try:
-                await session.commit()
-                return
-            except SQLAlchemyError as exc:
-                await session.rollback()
-                raise exc
+        await self.session.delete(user)
 
 
     async def delete_inactive_users(self) -> None:
-        async with AsyncSession() as session:
-            try:
-                await session.execute(
-                    delete(User).where(User.isDeleted == True)
-                )
-                await session.commit()
-                return
+       
+        try:
+            await self.session.execute(
+                delete(User).where(User.isDeleted == True)
+            )
+            await self.session.commit()
+            return
 
-            except SQLAlchemyError as exc:
-                await session.rollback()
-                raise exc
+        except SQLAlchemyError as exc:
+            await self.session.rollback()
+            raise exc
             
     # Others methods for count rows
     def __filters_by(self, filter_by: FilterByModel = None) -> List[bool]:

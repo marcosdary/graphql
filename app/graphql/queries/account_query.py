@@ -10,30 +10,45 @@ from app.graphql.permissions import (
     ApiKeyPermission
 )
 
+# DTOs
+from app.dto.user import UserReadModel
+
 # Responses
 from app.graphql.utils import build_extensions
 
 # Types
 from app.graphql.types.user_type import UserPublicType
 
+# Exceptions
+from app.exceptions import (
+    DuplicateReviewError,
+    NotFoundError,
+    EntityValidationError,
+    InvalidCredentialsException,
+    ForbiddenActionError
+)
+
 @strawberry.type
 class AccountQuery:
         
     @strawberry.field(permission_classes=[ApiKeyPermission, SessionPermission])
-    async def me(self, info) -> UserPublicType:
+    async def me(self, info: strawberry.Info) -> UserPublicType:
         try:
+            session = info.context["session"]
             user = info.context["user"]
-            user_repo = UserRepository()
+
+            user_repo = UserRepository(session=session)
 
             data = await user_repo.get_user_by_id(user["userId"])
             
-            return data
+            return UserReadModel.model_validate(data)
+        
+        except NotFoundError as exc:
+            raise StrawberryGraphQLError(message=str(exc))
+
         
         except Exception as exc:
-             raise StrawberryGraphQLError(
-                message=str(exc),
-                extensions=build_extensions(exc)
-            )
+            raise StrawberryGraphQLError(message=str(exc))
         
     
     

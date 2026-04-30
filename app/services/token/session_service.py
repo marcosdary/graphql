@@ -16,9 +16,5 @@ class SessionService(BaseService):
         )
 
     async def verify_session(self, session_id: str) -> dict:
-        data = await self._fetch_or_none(session_id)
-        
-        if data is None:
-            raise SessionError("Sessão inválida ou expirada.")
 
         return self._decode(session_id, self._session_key)

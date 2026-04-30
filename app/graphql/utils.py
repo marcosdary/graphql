@@ -1,20 +1,11 @@
-from fastapi import Request, Response
+from fastapi import Depends, Request, Response
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.services import token
 from app.core.constants import ExpirationTimes
-
-
-def build_extensions(exc: Exception) -> dict:
-    """Converte o padrão `build_response` para `GraphQLError.extensions`.
-
-    Permissions do Strawberry retornam erro via GraphQL errors, então
-    anexamos a estrutura padronizada em `extensions.response`.
-    """
-    return {
-        "typeError": exc.__class__.__name__ if exc else "UnknownError",
-        "statusCode": getattr(exc, "status_code", 500),
-    }
+from app.core.config import get_session
 
 
 async def create_session(userId: str, role: str):
@@ -29,9 +20,15 @@ async def create_session(userId: str, role: str):
         scope="authenticated"
     )
 
-async def get_context(request: Request, response: Response):
+
+async def get_context(
+    request: Request,
+    response: Response,
+    session: AsyncSession = Depends(get_session),
+):
     return {
         "request": request,
         "response": response,
-        "api_key": getattr(request.state, "api_key", None)
+        "api_key": getattr(request.state, "api_key", None),
+        "session": session,
     }
