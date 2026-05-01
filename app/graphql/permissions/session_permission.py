@@ -1,8 +1,10 @@
 from strawberry.permission import BasePermission
 from strawberry.exceptions import StrawberryGraphQLError
+from datetime import datetime
+from zoneinfo import ZoneInfo
 
 from app.services import token
-from app.exceptions import InvalidFieldsException
+from app.exceptions import InvalidFieldsException, ExpirationError
 
 
 class SessionPermission(BasePermission):
@@ -33,11 +35,18 @@ class SessionPermission(BasePermission):
             except ValueError:
                 return False
             
-            response = await self._session_service.verify_session(session_id=session_id)
-
+            response = self._session_service.verify_session(session_id=session_id)
 
             if params.get("logout") == "true":
                 return True
+            
+            sp = ZoneInfo("America/Sao_Paulo")
+            current = datetime.now(tz=sp).timestamp()
+
+            exp = response.get("exp")
+
+            if exp <= current:
+                raise ExpirationError("Recurso ou sessão expirada")
             
             info.context["user"] = response
             return True

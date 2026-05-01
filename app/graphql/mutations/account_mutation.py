@@ -13,8 +13,6 @@ from app.graphql.inputs import (
     UserUpdatePublicInput,
 )
 
-# Responses
-from app.graphql.utils import build_extensions
 
 # Permissions
 from app.graphql.permissions import (
@@ -73,8 +71,9 @@ class AccountMutation:
         try:
             session = info.context["session"]
             user = info.context["user"]
+            userId = user["sub"]
             user_repo = UserRepository(session=session)
-            await user_repo.delete_user(user["userId"])
+            await user_repo.delete_user(userId)
             await session.commit()
             return 
         

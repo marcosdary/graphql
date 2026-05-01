@@ -18,9 +18,6 @@ from app.graphql.permissions import (
     ApiKeyPermission
 )
 
-# Responses
-from app.graphql.utils import build_extensions
-
 # Inputs
 from app.graphql.inputs import (
     PaginationInput,

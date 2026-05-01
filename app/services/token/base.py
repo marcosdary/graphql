@@ -1,14 +1,14 @@
 import jwt
 
-from app.core.config import redis_client_async
+from app.core.config import redis_client_async, settings
 
 class BaseService:
 
     def _encode(self, payload: dict, key: str) -> str:
-        return jwt.encode(payload, key, "HS256")
+        return jwt.encode(payload, key, settings.ALGORITHM)
 
     def _decode(self, token: str, key: str) -> dict:
-        return jwt.decode(token, key, algorithms=["HS256"])
+        return jwt.decode(token, key, algorithms=[settings.ALGORITHM])
 
     async def _store_with_expiration(self, key: str, value, expiration: int):
         await redis_client_async.set(key, value, expiration)

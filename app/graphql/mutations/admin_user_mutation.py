@@ -19,9 +19,6 @@ from app.dto.user import UserReadModel
 # Repositories
 from app.repositories import UserRepository
 
-# Responses
-from app.graphql.utils import build_extensions
-
 # Permissions
 from app.graphql.permissions import (
     SessionPermission, 

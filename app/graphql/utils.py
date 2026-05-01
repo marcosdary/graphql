@@ -8,11 +8,11 @@ from app.core.constants import ExpirationTimes
 from app.core.config import get_session
 
 
-async def create_session(userId: str, role: str):
+def create_access_token(userId: str, role: str):
     session_service = token.SessionService()
     sp = ZoneInfo("America/Sao_Paulo")
     exp = datetime.now(tz=sp) + timedelta(minutes=ExpirationTimes.SESSION_EXPIRATION.value)
-    return await session_service.create_session(
+    return session_service.create_session(
         sub=userId, # subject, quem é o dono/assunto do token, normalmente o ID do usuário.
         exp=exp.timestamp(), # expiration time, quando o token expira.
         iat=datetime.now(tz=sp).timestamp(), # issued at, quando o token foi emitido.

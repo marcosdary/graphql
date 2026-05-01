@@ -13,9 +13,6 @@ from app.graphql.permissions import (
 # DTOs
 from app.dto.user import UserReadModel
 
-# Responses
-from app.graphql.utils import build_extensions
-
 # Types
 from app.graphql.types.user_type import UserPublicType
 

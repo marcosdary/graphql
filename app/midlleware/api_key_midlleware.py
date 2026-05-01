@@ -1,7 +1,4 @@
 from starlette.middleware.base import BaseHTTPMiddleware
-from starlette.responses import JSONResponse
-
-from app.services.token import ApiKeyService
 
 class ApiKeyMidlleware(BaseHTTPMiddleware):
 

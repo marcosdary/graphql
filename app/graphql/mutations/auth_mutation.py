@@ -22,12 +22,8 @@ from app.graphql.permissions import (
     ApiKeyPermission,
 )
 
-# Constants
-from app.core.constants import ExpirationTimes
-
-
 # Responses
-from app.graphql.utils import build_extensions, create_session
+from app.graphql.utils import create_access_token
 
 # Types
 from app.graphql.types.two_factor_auth_type import TwoFactorAuthType
@@ -84,7 +80,7 @@ class AuthMutation:
             user = await user_repo.get_user_by_email_and_password(data)
            
             two_factor_auth_service = token.TwoFactorAuthService()
-            print(user.userId, user.role)
+
             return await two_factor_auth_service.create_two_factor_token(
                 userId=user.userId,
                 role=user.role.value
@@ -103,7 +99,7 @@ class AuthMutation:
             two_fa = schema.to_pydantic()
             two_factor_auth_service = token.TwoFactorAuthService()
             data = await two_factor_auth_service.verify_two_factor_token(token=two_fa.token, number=two_fa.number)
-            session_new = await create_session(
+            session_new = create_access_token(
                 userId=data.get("sub"), 
                 role=data.get("role")
             )
@@ -111,7 +107,7 @@ class AuthMutation:
     
         except Exception as exc:
             raise StrawberryGraphQLError(message=str(exc))
-
+        
 
     @strawberry.mutation
     async def forgotPassword(self, info: strawberry.Info, schema: ForgotPasswordInput) -> PasswordResetType:

@@ -9,9 +9,6 @@ from app.graphql.inputs import (
 # Types
 from app.graphql.types.api_key_type import ApiKeyType
 
-# Responses
-from app.graphql.utils import build_extensions
-
 # Permissions
 from app.graphql.permissions import (
     SessionPermission, 

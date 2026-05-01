@@ -11,10 +11,8 @@ from app.models import User
 # DTOs
 from app.dto.user import (
     UserCreateModel,
-    UserReadModel,
     UserUpdateModel,
     UserLoginModel,
-    UserListModel,
     FilterByModel
 )
 from app.dto.pagination import PaginationModel
@@ -184,7 +182,7 @@ class UserRepository:
 
         if user.role == Roles.SUPER_ADMIN:
             raise ForbiddenActionError(
-                "Ação não permitida. Não pode apagar o ADMIN. " \
+                "Ação não permitida. " \
                 "Por favor, entre em contato com o suporte"
             )
 
