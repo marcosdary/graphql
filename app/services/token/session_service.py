@@ -14,7 +14,7 @@ class SessionService(BaseService):
     def create_session(self, **kwargs) -> SessionModel:     
         token = self._encode(kwargs, self._session_key)
         return SessionModel(
-            sessionId=token
+            session_id=token
         )
 
     def verify_session(self, session_id: str) -> dict:

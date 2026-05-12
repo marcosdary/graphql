@@ -1,4 +1,4 @@
-from sqlalchemy.exc import IntegrityError, SQLAlchemyError
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, delete, and_
 from typing import List
@@ -25,7 +25,6 @@ from app.core.constants import Roles
 from app.exceptions import (
     DuplicateReviewError,
     NotFoundError,
-    EntityValidationError,
     InvalidCredentialsException,
     ForbiddenActionError
 )
@@ -62,7 +61,7 @@ class UserRepository:
     async def get_user_by_email_and_password(self, login: UserLoginModel) -> User:
         
         query = await self.session.execute(
-            select(User.userId, User.email, User.role, User.password).where(User.email == login.email)
+            select(User.user_id, User.email, User.role, User.password).where(User.email == login.email)
         )
 
         user = query.first()
@@ -88,9 +87,9 @@ class UserRepository:
     async def get_user_by_email(self, login: UserLoginModel) -> User:
        
         user = await self.session.scalar(
-            select(User.userId, User.email).where(
+            select(User.user_id).where(
                 User.email==login.email, 
-                User.isDeleted != True
+                User.is_deleted != True
             )
         )
             
@@ -105,8 +104,8 @@ class UserRepository:
        
         user = await self.session.scalar(
             select(User).where(
-                User.userId==user_update.userId, 
-                User.isDeleted != True
+                User.user_id==user_update.user_id, 
+                User.is_deleted != True
             )
         )
                     
@@ -130,7 +129,7 @@ class UserRepository:
        
 
         user = await self.session.scalar(
-            select(User).where(User.userId == user_id)
+            select(User).where(User.user_id == user_id)
         )
             
         if not user:
@@ -142,9 +141,9 @@ class UserRepository:
     async def list_users(self, pagination: PaginationModel, filter_by: FilterByModel = None) -> List[User]:
        
         query = select(
-            User.userId, User.name, User.email, 
-            User.role, User.isDeleted, User.createdAt, 
-            User.updatedAt
+            User.user_id, User.name, User.email, 
+            User.role, User.is_deleted, User.created_at, 
+            User.updated_at
         )
 
         filters = self.__filters_by(filter_by=filter_by)
@@ -157,7 +156,7 @@ class UserRepository:
             
         offset = (page - 1) * limit
 
-        list_query = query.order_by(User.createdAt.desc()).offset(offset).limit(limit)
+        list_query = query.order_by(User.created_at.desc()).offset(offset).limit(limit)
 
         if filters:
             list_query = list_query.where(and_(*filters))
@@ -174,7 +173,7 @@ class UserRepository:
     async def delete_user(self, user_id: str) -> None:
         
         user = await self.session.scalar(
-            select(User).where(User.userId == user_id)
+            select(User).where(User.user_id == user_id)
         )
 
         if not user:
@@ -193,7 +192,7 @@ class UserRepository:
        
         try:
             await self.session.execute(
-                delete(User).where(User.isDeleted == True)
+                delete(User).where(User.is_deleted == True)
             )
             await self.session.commit()
             return
@@ -215,9 +214,9 @@ class UserRepository:
                 User.name.ilike(f"%{name}%")
             )
 
-        if filter_by.isDeleted is not None:
+        if filter_by.is_deleted is not None:
             filters.append(
-                User.isDeleted == filter_by.isDeleted
+                User.is_deleted == filter_by.is_deleted
             )
 
         if filter_by.role:
@@ -225,14 +224,14 @@ class UserRepository:
                 User.role == filter_by.role
             )
     
-        if filter_by.createdAt:
-            start = datetime.combine(filter_by.createdAt, time.min)
+        if filter_by.created_at:
+            start = datetime.combine(filter_by.created_at, time.min)
             end = start + timedelta(days=1)
             filters.append(
-                User.createdAt >= start
+                User.created_at >= start
             )
             filters.append(
-                User.createdAt < end
+                User.created_at < end
             )
         
         return filters

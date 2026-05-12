@@ -6,5 +6,5 @@ from app.dto.password_reset import PasswordResetModel
 @pydantic_type(PasswordResetModel)
 class PasswordResetType:
     token: strawberry.auto
-    expiresAt: strawberry.auto
+    expires_at: strawberry.auto
 

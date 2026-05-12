@@ -27,4 +27,7 @@ class Roles(Enum):
     ADMIN = "ADMIN"
     SUPER_ADMIN = "SUPER_ADMIN"
 
-
+class Papers(Enum):
+    """Enumeração de papéis do token."""
+    SESSION = "SESSION"
+    API_KEY = "API_KEY"

@@ -16,4 +16,4 @@ class SessionModel(BaseModel):
         expiresAt (datetime): Data e hora de expiração da sessão.
     """
 
-    sessionId: str
+    session_id: str

@@ -10,21 +10,22 @@ create type papers as enum (
 );
 
 create table users (
-    "userId" varchar(255) primary key,
+    "user_id" varchar(255) primary key,
     "name" varchar(255) not null,
     "email" varchar(255) not null unique,
     "role" roles not null default 'USER',
     "password" varchar(255) not null,
-    "isDeleted" boolean default false,
-    "createdAt" timestamp default current_timestamp,
-    "updatedAt" timestamp default current_timestamp
+    "is_deleted" boolean default false,
+    "created_at" timestamp default current_timestamp,
+    "updated_at" timestamp default current_timestamp
 );
 
 create table token (
 	"token" varchar(600) primary key,
 	"paper" papers not null,
 	"disabled" boolean default false,
-	"createdAt" timestamp default current_timestamp
+	"created_at" timestamp default current_timestamp,
+	"updated_at" timestamp default current_timestamp
 );
 
 
@@ -43,5 +44,7 @@ create index "idx_users_get_by_email" on users("isDeleted", email);
 create index "idx_users_get_by_id" on users("isDeleted", "userId");
 
 create index "idx_users_isDeleted" on users("isDeleted");
+
+drop table token;
 
 

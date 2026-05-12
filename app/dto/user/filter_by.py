@@ -6,6 +6,6 @@ from app.dto.user.model import UserModel
 class FilterByModel(UserModel):
 
     name: str | None = None
-    createdAt: date | None = None
-    isDeleted: bool | None = None
+    created_at: date | None = None
+    is_deleted: bool | None = None
     role: Roles | None = None

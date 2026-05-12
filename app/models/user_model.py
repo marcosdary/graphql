@@ -1,8 +1,9 @@
-from sqlalchemy import Column, String, Boolean, Enum
+from sqlalchemy.orm import Mapped, mapped_column
 from uuid import uuid4
 
 from app.models.base_model import Base
 from app.core.constants import Roles
+
 class User(Base):
     """Modelo de usuário para o banco de dados.
 
@@ -21,9 +22,11 @@ class User(Base):
 
     __tablename__ = "users"
 
-    userId: str = Column(String(255), primary_key=True, default=lambda: str(uuid4()))
-    name: str = Column(String(255), nullable=False)
-    role: Roles = Column(Enum(Roles), nullable=False, default="USER")
-    email: str = Column(String(255), nullable=False, unique=True)
-    isDeleted: bool = Column(Boolean, default=False)
-    password: str = Column(String(255), nullable=False)
+    user_id: Mapped[str] = mapped_column(primary_key=True, default=lambda: str(uuid4()))
+    name: Mapped[str] = mapped_column(nullable=False)
+    role: Mapped[Roles] = mapped_column(nullable=False, default="USER")
+    email: Mapped[str] = mapped_column(nullable=False, unique=True)
+    is_deleted: Mapped[bool] = mapped_column(default=False)
+    password: Mapped[str] = mapped_column(nullable=False)
+
+

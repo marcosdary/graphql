@@ -6,8 +6,8 @@ from app.dto.user import UserReadModel, UserListModel
 class UserPublicType:
     name: strawberry.auto
     email: strawberry.auto
-    createdAt: strawberry.auto
-    updatedAt: strawberry.auto
+    created_at: strawberry.auto
+    updated_at: strawberry.auto
 
 @pydantic_type(UserReadModel, all_fields=True)
 class UserPrivateType:

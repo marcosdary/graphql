@@ -82,7 +82,7 @@ class AuthMutation:
             two_factor_auth_service = token.TwoFactorAuthService()
 
             return await two_factor_auth_service.create_two_factor_token(
-                userId=user.userId,
+                user_id=user.user_id,
                 role=user.role.value
             )
         
@@ -100,7 +100,7 @@ class AuthMutation:
             two_factor_auth_service = token.TwoFactorAuthService()
             data = await two_factor_auth_service.verify_two_factor_token(token=two_fa.token, number=two_fa.number)
             session_new = create_access_token(
-                userId=data.get("sub"), 
+                user_id=data.get("sub"), 
                 role=data.get("role")
             )
             return session_new
@@ -118,12 +118,12 @@ class AuthMutation:
             password_reset_service = token.PasswordResetService()
 
             user_repo = UserRepository(session=session)
-            user = await user_repo.get_user_by_email(schema)
+            user_id = await user_repo.get_user_by_email(schema)
     
             forgot = await password_reset_service.handle(
                 action="forgot", 
                 payload={
-                    "userId": user.userId
+                    "user_id": user_id
                 }
             )
             
@@ -148,13 +148,13 @@ class AuthMutation:
                 action="reset", 
                 payload={"token": data.token}
             )
-            userId = decode.get("userId")
+            user_id = decode.get("user_id")
             
             user_repo = UserRepository(session=session)
 
             user = await user_repo.update_user( 
                 user_update=UserUpdateModel(
-                    userId=userId,
+                    user_id=user_id,
                     password=data.password
                 )
             )

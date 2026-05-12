@@ -9,12 +9,12 @@ from app.core.config import get_session
 from app.graphql.context import Context
 
 
-def create_access_token(userId: str, role: str):
+def create_access_token(user_id: str, role: str):
     session_service = token.SessionService()
     sp = ZoneInfo("America/Sao_Paulo")
     exp = datetime.now(tz=sp) + timedelta(minutes=ExpirationTimes.SESSION_EXPIRATION.value)
     return session_service.create_session(
-        sub=userId, # subject, quem é o dono/assunto do token, normalmente o ID do usuário.
+        sub=user_id, # subject, quem é o dono/assunto do token, normalmente o ID do usuário.
         type="session",
         exp=int(exp.timestamp()), # expiration time, quando o token expira.
         iat=int(datetime.now(tz=sp).timestamp()), # issued at, quando o token foi emitido.

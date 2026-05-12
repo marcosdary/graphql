@@ -18,7 +18,7 @@ class UserUpdateModel(UserModel):
         email (str | None): Novo e-mail do usuário. Pode ser None se não for alterado.
         password (str | None): Nova senha do usuário. Se None, a senha não será alterada.
     """
-    userId: str | None = None
+    user_id: str | None = None
     name: str | None = None
     email: str | None = None
     role: Roles | None = None

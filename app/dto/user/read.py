@@ -24,16 +24,16 @@ class UserReadModel(UserModel):
         updatedAt (datetime): Data e hora da última atualização do usuário.
     """
 
-    userId: str
+    user_id: str
     name: str | None = None
     email: str
     password: str | None = None
     role: str | None = None
-    isDeleted: bool | None = None
-    createdAt: datetime | None = None
-    updatedAt: datetime | None = None
+    is_deleted: bool | None = None
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
 
-    @field_serializer("createdAt", "updatedAt", mode="plain")
+    @field_serializer("created_at", "updated_at", mode="plain")
     def serialize_dates(self, value: datetime | None) -> str | None:
         """
         Serializa objetos datetime em strings no formato ISO 8601.

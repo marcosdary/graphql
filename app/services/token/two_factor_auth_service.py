@@ -25,14 +25,14 @@ class TwoFactorAuthService(BaseService):
         super().__init__()
 
     async def create_two_factor_token(
-        self, userId: str, role: str
+        self, user_id: str, role: str
     ) -> TwoFactorAuthModel:
         sp = ZoneInfo("America/Sao_Paulo")
         iat = datetime.now(tz=sp)
         exp = iat + timedelta(minutes=self._exp_two_factor_auth)
 
         payload = {
-            "sub": userId,
+            "sub": user_id,
             "exp": exp.timestamp(),
             "scope": "pending",
             "type": "2fa",

@@ -19,9 +19,9 @@ class PasswordResetModel(BaseModel):
 
     token: str
     number: int | None = None
-    expiresAt: datetime | None = None
+    expires_at: datetime | None = None
 
-    @field_serializer("expiresAt", mode="plain")
+    @field_serializer("expires_at", mode="plain")
     def serialize_dates(self, value: datetime | None) -> str | None:
         """
         Serializa objetos datetime em strings no formato ISO 8601.

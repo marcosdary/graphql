@@ -38,7 +38,7 @@ class PasswordResetService(BaseService):
         return PasswordResetModel(
             token=token,
             number=number,
-            expiresAt=datetime.now() + timedelta(seconds=self._password_reset_expiration)
+            expires_at=datetime.now() + timedelta(seconds=self._password_reset_expiration)
         )
 
     async def _decode_reset_password(self, token: str) -> dict:

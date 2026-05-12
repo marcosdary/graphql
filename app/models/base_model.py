@@ -1,5 +1,4 @@
-from sqlalchemy.orm import DeclarativeBase
-from sqlalchemy import Column, DateTime
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from datetime import datetime
 
 
@@ -18,14 +17,12 @@ class Base(DeclarativeBase):
 
     __abstract__ = True
 
-    createdAt = Column(
-        DateTime,
+    created_at: Mapped[datetime] = mapped_column(
         default=datetime.now,
         nullable=False
     )
 
-    updatedAt = Column(
-        DateTime,
+    updated_at: Mapped[datetime] = mapped_column(
         default=datetime.now,
         onupdate=datetime.now,
         nullable=False
