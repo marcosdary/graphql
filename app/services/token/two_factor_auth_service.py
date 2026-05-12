@@ -35,6 +35,7 @@ class TwoFactorAuthService(BaseService):
             "sub": userId,
             "exp": exp.timestamp(),
             "scope": "pending",
+            "type": "2fa",
             "iat": iat,
             "role": role
         }
@@ -43,7 +44,7 @@ class TwoFactorAuthService(BaseService):
         token = self._encode(payload, self._two_factor_auth_key)
 
         await self._store_with_expiration(token, number, self._exp_two_factor_auth * 60)
-
+        
         return TwoFactorAuthModel(
             token=token,
             number=number

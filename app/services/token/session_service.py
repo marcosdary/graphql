@@ -21,4 +21,4 @@ class SessionService(BaseService):
         try: 
             return self._decode(session_id, self._session_key)
         except InvalidSignatureError:
-            raise SessionError("Token verificado inválido")
+            raise SessionError("Erro relacionado à sessão do usuário ou ao gerenciamento de sessão.")

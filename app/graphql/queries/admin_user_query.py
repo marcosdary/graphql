@@ -27,15 +27,6 @@ from app.graphql.inputs import (
 # Types
 from app.graphql.types.user_type import UserListType, UserPrivateType
 
-# Exceptions
-from app.exceptions import (
-    DuplicateReviewError,
-    NotFoundError,
-    EntityValidationError,
-    InvalidCredentialsException,
-    ForbiddenActionError
-)
-
 @strawberry.type
 class AdminUserQuery:
 
@@ -47,7 +38,7 @@ class AdminUserQuery:
         filterBy: Optional[FilterByInput] = None
     ) -> UserListType:
         try:
-            session = info.context["session"]
+            session = info.context.session
 
             user_repo = UserRepository(session=session)
             
@@ -67,7 +58,7 @@ class AdminUserQuery:
     @strawberry.field(permission_classes=[ApiKeyPermission, SessionPermission, RolePermission])
     async def getById(self, info: strawberry.Info, userId: str) -> UserPrivateType:
         try:
-            session = info.context["session"]
+            session = info.context.session
 
             user_repo = UserRepository(session=session)
 

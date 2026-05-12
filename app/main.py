@@ -5,7 +5,6 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.graphql.query import Query
 from app.graphql.mutation import Mutation
-from app.midlleware import ApiKeyMidlleware
 
 from app.graphql.utils import get_context
 
@@ -17,8 +16,6 @@ app.add_middleware(
     allow_methods=["GET","POST"],
     allow_headers=["Authorization","Content-Type"]
 )
-
-app.add_middleware(ApiKeyMidlleware)
 
 schema = strawberry.Schema(
     query=Query, 

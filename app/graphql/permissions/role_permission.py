@@ -15,15 +15,9 @@ class RolePermission(BasePermission):
 
     async def has_permission(self, source, info, **kwargs):
         try:
-            
-            context: dict = info.context["user"]
-            *_, role = context.values()
-    
+            role = info.context.role
             await check_roles(role)
         
             return True
         except Exception as exc:
-            raise StrawberryGraphQLError(str(exc), extensions={
-                "typeError": exc.__class__.__name__,
-                "statusCode": getattr(exc, "status_code", 500)
-            })
+            raise StrawberryGraphQLError(str(exc))

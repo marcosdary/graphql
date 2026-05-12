@@ -38,7 +38,7 @@ class AccountMutation:
     @strawberry.mutation(permission_classes=[ApiKeyPermission, SessionPermission])
     async def updateProfile(self, info: strawberry.Info, schema: UserUpdatePublicInput) -> UserPublicType:  
         try:
-            session = info.context["session"]
+            session = info.context.session
             user = info.context["user"]
 
             payload = schema.to_pydantic()
@@ -69,7 +69,7 @@ class AccountMutation:
     @strawberry.mutation(permission_classes=[ApiKeyPermission, SessionPermission])
     async def deleteAccount(self, info) -> None:
         try:
-            session = info.context["session"]
+            session = info.context.session
             user = info.context["user"]
             userId = user["sub"]
             user_repo = UserRepository(session=session)

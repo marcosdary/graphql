@@ -43,7 +43,7 @@ class AdminUserMutation:
     @strawberry.mutation(permission_classes=[ApiKeyPermission, SessionPermission, RolePermission])
     async def create(self, info: strawberry.Info, schema: UserPrivateInput) -> UserPrivateType:
         try:
-            session = info.context["session"]
+            session = info.context.session
            
             data = schema.to_pydantic()
             
@@ -67,7 +67,7 @@ class AdminUserMutation:
     @strawberry.mutation(permission_classes=[ApiKeyPermission, SessionPermission, RolePermission])
     async def update(self, info: strawberry.Info, schema: UserUpdatePrivateInput) -> UserPrivateType:  
         try:
-            session = info.context["session"]
+            session = info.context.session
 
             data = schema.to_pydantic()
             user_repo = UserRepository(session=session)
@@ -82,7 +82,7 @@ class AdminUserMutation:
     @strawberry.mutation(permission_classes=[ApiKeyPermission, SessionPermission, RolePermission])
     async def delete(self, info: strawberry.Info, userId: str) -> None:
         try:
-            session = info.context["session"]
+            session = info.context.session
             user_repo = UserRepository(session=session)
             await user_repo.delete_user(userId)
             await session.commit()

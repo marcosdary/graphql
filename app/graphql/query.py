@@ -2,8 +2,6 @@ import strawberry
 
 from app.graphql.queries import AccountQuery, AdminQuery
 
-
-
 @strawberry.type
 class Query:
     

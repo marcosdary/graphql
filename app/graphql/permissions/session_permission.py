@@ -18,8 +18,9 @@ class SessionPermission(BasePermission):
         try:
             # o token já foi validado pelo middleware, mas garantimos aqui
             # que ele esteja presente (fallback) e recuperamos o payload.
-            header: dict = info.context["request"].headers
-            params: dict = info.context["request"].query_params
+            request = info.context.request
+            header: dict = request.headers
+            params: dict = request.query_params
     
             auth = header.get("Authorization")
 
@@ -47,9 +48,10 @@ class SessionPermission(BasePermission):
 
             if exp <= current:
                 raise ExpirationError("Recurso ou sessão expirada")
-            
-            info.context["user"] = response
+
+            info.context.user_id = response.get("sub")
+            info.context.role = response.get("role")
             return True
-        
+    
         except Exception as exc:
             raise StrawberryGraphQLError(str(exc))

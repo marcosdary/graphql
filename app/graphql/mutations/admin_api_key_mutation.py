@@ -1,5 +1,7 @@
 import strawberry
 from strawberry.exceptions import StrawberryGraphQLError
+from datetime import datetime, timedelta, timezone
+
 
 # Inputs
 from app.graphql.inputs import (
@@ -25,10 +27,19 @@ class AdminApiKeyMutation:
     async def create(self, info, schema: ApiKeyInput) -> ApiKeyType:
         try:
             api_key_service = token.ApiKeyService()
-            user = info.context["user"]
+            
             data = schema.to_pydantic()
             
-            return await api_key_service.generate_api_key(data.expiration.value, **user)
+            iat = datetime.now(timezone.utc).timestamp()
+            exp = datetime.now(timezone.utc) + timedelta(seconds=data.expiration.value)
+
+            return api_key_service.generate_api_key(
+                type="api_key", 
+                iat=int(iat),
+                exp=int(exp.timestamp()),
+                sub=info.context.user_id, 
+                role=info.context.role
+            )
         
         except Exception as exc:
             raise StrawberryGraphQLError(message=str(exc))

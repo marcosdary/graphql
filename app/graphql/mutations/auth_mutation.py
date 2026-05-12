@@ -50,7 +50,7 @@ class AuthMutation:
     @strawberry.mutation(permission_classes=[ApiKeyPermission])
     async def register(self, info: strawberry.Info, schema: UserInput) -> UserPublicType:
         try:
-            session = info.context["session"]
+            session = info.context.session
             data = schema.to_pydantic()
             user_repo = UserRepository(session=session)
             
@@ -73,7 +73,7 @@ class AuthMutation:
     @strawberry.mutation
     async def login(self, info: strawberry.Info, schema: UserLoginInput) -> TwoFactorAuthType:
         try:
-            session = info.context["session"]
+            session = info.context.session
             data = schema.to_pydantic()
             user_repo = UserRepository(session=session)
 
@@ -112,7 +112,7 @@ class AuthMutation:
     @strawberry.mutation
     async def forgotPassword(self, info: strawberry.Info, schema: ForgotPasswordInput) -> PasswordResetType:
         try:
-            session = info.context["session"]
+            session = info.context.session
             schema = schema.to_pydantic()
 
             password_reset_service = token.PasswordResetService()
@@ -139,7 +139,7 @@ class AuthMutation:
     @strawberry.mutation
     async def resetPassword(self, info: strawberry.Info, schema: UserResetPasswordInput) -> UserPublicType:
         try:
-            session = info.context["session"]
+            session = info.context.session
 
             data = schema.to_pydantic()
             password_reset_service = token.PasswordResetService()
