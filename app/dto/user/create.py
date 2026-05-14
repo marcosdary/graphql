@@ -8,7 +8,7 @@ from app.dto.user.model import UserModel
 from app.exceptions import InvalidFieldsException, UnprocessableEntity
 
 
-class UserCreateModel(UserModel):
+class UserCreate(UserModel):
     """
     Modelo de dados utilizado para criação de um novo usuário.
 
@@ -31,7 +31,7 @@ class UserCreateModel(UserModel):
     name: str
     email: str
     password: str | None = str(randint(100_000, 999_999))
-    role: Roles | None = Roles.USER
+    role: Roles | None = Roles.user
 
     @field_validator("email", mode="after")
     def validate_email(cls, email) -> str:

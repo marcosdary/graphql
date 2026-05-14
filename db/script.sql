@@ -1,9 +1,3 @@
-create type roles as enum (
-    'ADMIN', 
-    'USER', 
-    'SUPER_ADMIN'
-);
-
 create type papers as enum (
 	'SESSION',
 	'API_KEY'
@@ -13,7 +7,6 @@ create table users (
     "user_id" varchar(255) primary key,
     "name" varchar(255) not null,
     "email" varchar(255) not null unique,
-    "role" roles not null default 'USER',
     "password" varchar(255) not null,
     "is_deleted" boolean default false,
     "created_at" timestamp default current_timestamp,
@@ -27,6 +20,38 @@ create table token (
 	"created_at" timestamp default current_timestamp,
 	"updated_at" timestamp default current_timestamp
 );
+
+create table role_permissions (
+    role_id varchar(255) not null,
+    permission_id varchar(255) not null,
+
+    primary key (role_id, permission_id),
+
+    constraint fk_role_permissions_role
+        foreign key (role_id)
+        references role(role_id)
+        on delete cascade,
+
+    constraint fk_role_permissions_permission
+        foreign key (permission_id)
+        references permission(permission_id)
+        on delete cascade
+);
+
+create table permission (
+	permission_id varchar(255) primary key,
+	name varchar(255) not null unique,
+	created_at timestamp default current_timestamp,
+	updated_at timestamp default current_timestamp
+);
+
+create table role (
+	role_id varchar(255) primary key,
+	name varchar(255) not null unique,
+	created_at timestamp default current_timestamp,
+	updated_at timestamp default current_timestamp
+);
+
 
 
 create index "idx_tokens_token" on token("token");
@@ -45,6 +70,12 @@ create index "idx_users_get_by_id" on users("isDeleted", "userId");
 
 create index "idx_users_isDeleted" on users("isDeleted");
 
-drop table token;
+drop table users;
+drop type roles;
+
+select * from users;
+select * from token;
+select * from role;
+select * from permission;
 
 

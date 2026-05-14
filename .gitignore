@@ -210,3 +210,4 @@ __marimo__/
 uv.lock
 .pyproject.toml
 .codex
+index.py

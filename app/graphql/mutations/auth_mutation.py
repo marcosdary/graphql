@@ -1,7 +1,7 @@
 import strawberry
 from strawberry.exceptions import StrawberryGraphQLError
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
-
+ 
 # Repository
 from app.repositories.user_repository import UserRepository
 
@@ -94,7 +94,7 @@ class AuthMutation:
     
 
     @strawberry.mutation
-    async def verifyTwoFactor(self, schema: Verify2FAInput) -> SessionType:
+    async def verify_two_factor(self, schema: Verify2FAInput) -> SessionType:
         try:
             two_fa = schema.to_pydantic()
             two_factor_auth_service = token.TwoFactorAuthService()
@@ -110,7 +110,7 @@ class AuthMutation:
         
 
     @strawberry.mutation
-    async def forgotPassword(self, info: strawberry.Info, schema: ForgotPasswordInput) -> PasswordResetType:
+    async def forgot_password(self, info: strawberry.Info, schema: ForgotPasswordInput) -> PasswordResetType:
         try:
             session = info.context.session
             schema = schema.to_pydantic()
@@ -137,7 +137,7 @@ class AuthMutation:
 
 
     @strawberry.mutation
-    async def resetPassword(self, info: strawberry.Info, schema: UserResetPasswordInput) -> UserPublicType:
+    async def reset_password(self, info: strawberry.Info, schema: UserResetPasswordInput) -> UserPublicType:
         try:
             session = info.context.session
 

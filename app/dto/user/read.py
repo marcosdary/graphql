@@ -3,6 +3,7 @@ from zoneinfo import ZoneInfo
 from pydantic import field_serializer
 
 from app.dto.user.model import UserModel
+from app.dto.role import RoleRead
 
 
 class UserReadModel(UserModel):
@@ -28,7 +29,7 @@ class UserReadModel(UserModel):
     name: str | None = None
     email: str
     password: str | None = None
-    role: str | None = None
+    role: RoleRead | None = None
     is_deleted: bool | None = None
     created_at: datetime | None = None
     updated_at: datetime | None = None

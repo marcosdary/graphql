@@ -10,7 +10,7 @@ from app.models import User
 
 # DTOs
 from app.dto.user import (
-    UserCreateModel,
+    UserCreateDB,
     UserUpdateModel,
     UserLoginModel,
     FilterByModel
@@ -29,14 +29,13 @@ from app.exceptions import (
     ForbiddenActionError
 )
 
-
 class UserRepository:
 
     def __init__(self, session: AsyncSession):
         self.session = session
 
 
-    async def create_user(self, create_user: UserCreateModel) -> User:
+    async def create_user(self, create_user: UserCreateDB) -> User:
         
         query = await self.session.execute(
             select(User.email).where(User.email == create_user.email)
@@ -46,12 +45,6 @@ class UserRepository:
 
         if email_exists:
             raise DuplicateReviewError("Email está em uso.")
-
-        if create_user.role == Roles.SUPER_ADMIN:
-            raise DuplicateReviewError(
-                "Registro de Administrador negado, " \
-                "pois só pode ter um único master."
-            )
             
         new_user = User(**create_user.model_dump())
 

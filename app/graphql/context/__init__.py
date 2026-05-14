@@ -10,6 +10,7 @@ class Context(BaseContext):
     session: AsyncSession
     user_id: str | None 
     role: Roles | None 
+    scope: str
 
 __all__ = ["Context",]
 

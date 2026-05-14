@@ -12,6 +12,6 @@ class AdminMutation:
         return AdminUserMutation()
     
     @strawberry.field
-    def apiKey(self) -> AdminApiKeyMutation:
+    def api_key(self) -> AdminApiKeyMutation:
         return AdminApiKeyMutation()
     

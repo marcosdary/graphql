@@ -23,9 +23,9 @@ class ExpirationTimes(Enum):
 class Roles(Enum):
     """Enumeração de papéis de usuário."""
 
-    USER = "USER"
-    ADMIN = "ADMIN"
-    SUPER_ADMIN = "SUPER_ADMIN"
+    user = "user"
+    admin = "admin"
+    super_admin = "super_admin"
 
 class Papers(Enum):
     """Enumeração de papéis do token."""

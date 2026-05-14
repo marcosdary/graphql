@@ -27,7 +27,7 @@ class TwoFactorAuthService(BaseService):
     async def create_two_factor_token(
         self, user_id: str, role: str
     ) -> TwoFactorAuthModel:
-        sp = ZoneInfo("America/Sao_Paulo")
+        sp = settings.zone_info
         iat = datetime.now(tz=sp)
         exp = iat + timedelta(minutes=self._exp_two_factor_auth)
 

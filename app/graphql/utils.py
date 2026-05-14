@@ -5,13 +5,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.services import token
 from app.core.constants import ExpirationTimes
-from app.core.config import get_session
+from app.core.config import get_session, settings
 from app.graphql.context import Context
 
 
 def create_access_token(user_id: str, role: str):
     session_service = token.SessionService()
-    sp = ZoneInfo("America/Sao_Paulo")
+    sp = settings.zone_info
     exp = datetime.now(tz=sp) + timedelta(minutes=ExpirationTimes.SESSION_EXPIRATION.value)
     return session_service.create_session(
         sub=user_id, # subject, quem é o dono/assunto do token, normalmente o ID do usuário.

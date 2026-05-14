@@ -1,5 +1,7 @@
 from functools import lru_cache
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from zoneinfo import ZoneInfo
+from typing import Optional
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
@@ -20,6 +22,8 @@ class Settings(BaseSettings):
 
     API_KEY: str
     ALGORITHM: str
+
+    zone_info: Optional[ZoneInfo] = ZoneInfo("America/Sao_Paulo") 
 
 
 @lru_cache(maxsize=1)

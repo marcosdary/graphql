@@ -1,10 +1,20 @@
 from strawberry.permission import BasePermission
+from graphql.pyutils import Path
+from typing import List
 from strawberry.exceptions import StrawberryGraphQLError
 from datetime import datetime
-from zoneinfo import ZoneInfo
 
 from app.services import token
+from app.core.config import settings
 from app.exceptions import InvalidFieldsException, ExpirationError
+
+def get_resolvers(path: Path, resolvers: List[str] = []) -> List[str]:
+    resolvers.append(path.key)
+
+    if not isinstance(path.prev, Path):
+        return resolvers
+
+    return get_resolvers(path.prev, resolvers)
 
 
 class SessionPermission(BasePermission):
@@ -21,7 +31,9 @@ class SessionPermission(BasePermission):
             request = info.context.request
             header: dict = request.headers
             params: dict = request.query_params
-    
+            
+            resolvers = ":".join(key for key in get_resolvers(info.path))
+           
             auth = header.get("Authorization")
 
             if not auth:
@@ -41,7 +53,7 @@ class SessionPermission(BasePermission):
             if params.get("logout") == "true":
                 return True
             
-            sp = ZoneInfo("America/Sao_Paulo")
+            sp = settings.zone_info
             current = datetime.now(tz=sp).timestamp()
 
             exp = response.get("exp")

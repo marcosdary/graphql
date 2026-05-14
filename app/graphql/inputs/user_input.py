@@ -3,7 +3,7 @@ from strawberry.experimental.pydantic import error_type as pydantic_error_type
 import strawberry
 
 from app.dto.user import (
-    UserCreateModel,
+    UserCreate,
     UserUpdateModel,
     UserLoginModel,
     UserResetPasswordModel,
@@ -13,14 +13,14 @@ from app.dto.two_factor_auth import TwoFactorAuthModel
 from app.dto.password_reset import PasswordResetModel
 
 # Criação de usuário comum
-@pydantic_input(UserCreateModel)
+@pydantic_input(UserCreate)
 class UserInput:
     name: strawberry.auto 
     email: strawberry.auto
     password: strawberry.auto
 
 # Criação de usuário (admin)
-@pydantic_input(UserCreateModel)
+@pydantic_input(UserCreate)
 class UserPrivateInput:
     name: strawberry.auto
     email: strawberry.auto

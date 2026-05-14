@@ -13,7 +13,6 @@ from app.graphql.inputs import (
     UserUpdatePublicInput,
 )
 
-
 # Permissions
 from app.graphql.permissions import (
     SessionPermission, 
@@ -36,7 +35,7 @@ from app.exceptions import (
 class AccountMutation:
           
     @strawberry.mutation(permission_classes=[ApiKeyPermission, SessionPermission])
-    async def updateProfile(self, info: strawberry.Info, schema: UserUpdatePublicInput) -> UserPublicType:  
+    async def update_profile(self, info: strawberry.Info, schema: UserUpdatePublicInput) -> UserPublicType:  
         try:
             session = info.context.session
             user = info.context["user"]
@@ -67,7 +66,7 @@ class AccountMutation:
         
 
     @strawberry.mutation(permission_classes=[ApiKeyPermission, SessionPermission])
-    async def deleteAccount(self, info) -> None:
+    async def delete_account(self, info) -> None:
         try:
             session = info.context.session
             user = info.context["user"]

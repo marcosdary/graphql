@@ -1,1 +1,4 @@
 from app.repositories.user_repository import UserRepository
+from app.repositories.permisson_repository import PermissionRepository
+from app.repositories.role_repository import RoleRepository
+from app.repositories.role_permissions_repository import RolePermissionsRepository

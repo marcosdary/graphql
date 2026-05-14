@@ -1,8 +1,8 @@
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy import ForeignKey
 from uuid import uuid4
 
 from app.models.base_model import Base
-from app.core.constants import Roles
 
 class User(Base):
     """Modelo de usuário para o banco de dados.
@@ -24,9 +24,18 @@ class User(Base):
 
     user_id: Mapped[str] = mapped_column(primary_key=True, default=lambda: str(uuid4()))
     name: Mapped[str] = mapped_column(nullable=False)
-    role: Mapped[Roles] = mapped_column(nullable=False, default="USER")
+    
     email: Mapped[str] = mapped_column(nullable=False, unique=True)
     is_deleted: Mapped[bool] = mapped_column(default=False)
     password: Mapped[str] = mapped_column(nullable=False)
 
+    role_id: Mapped[str] = mapped_column(
+        ForeignKey("role.role_id"),
+        nullable=False,
+    )
 
+    role: Mapped["Role"] = relationship(
+        "Role",
+        back_populates="users",
+        lazy="selectin"
+    )

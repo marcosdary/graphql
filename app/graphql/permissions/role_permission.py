@@ -6,7 +6,7 @@ from app.exceptions import ProtectedRouteError
 
 async def check_roles(role: str) -> None:
     
-    if Roles.USER.value == role:
+    if Roles.user.value == role:
         raise ProtectedRouteError("Forneça as credenciais corretas para acessar as informações.")
     
     return 
