@@ -4,13 +4,13 @@ import strawberry
 
 from app.dto.user import (
     UserCreate,
-    UserUpdateModel,
-    UserLoginModel,
-    UserResetPasswordModel,
-    FilterByModel,
+    UserUpdate,
+    UserLogin,
+    UserResetPassword,
+    FilterBy,
 )
-from app.dto.two_factor_auth import TwoFactorAuthModel
-from app.dto.password_reset import PasswordResetModel
+from app.dto.two_factor_auth import TwoFactorAuth
+from app.dto.password_reset import PasswordReset
 
 # Criação de usuário comum
 @pydantic_input(UserCreate)
@@ -28,23 +28,23 @@ class UserPrivateInput:
     role: strawberry.auto
 
 # Atualização de suas informações
-@pydantic_input(UserUpdateModel)
+@pydantic_input(UserUpdate)
 class UserUpdatePublicInput:
     name: strawberry.auto 
 
 
 # Atualização de suas informações
-@pydantic_input(UserUpdateModel, all_fields=True)
+@pydantic_input(UserUpdate, all_fields=True)
 class UserUpdatePrivateInput:
     pass
 
 # Login
-@pydantic_input(UserLoginModel, all_fields=True)
+@pydantic_input(UserLogin, all_fields=True)
 class UserLoginInput:
     pass
 
 # Verifição de dois fatores
-@pydantic_input(TwoFactorAuthModel)
+@pydantic_input(TwoFactorAuth)
 class Verify2FAInput:
     number: strawberry.auto
     token: strawberry.auto
@@ -52,23 +52,23 @@ class Verify2FAInput:
 # Realizar a renovação da senha
 
 # Pedido de recuperação
-@pydantic_input(UserLoginModel)
+@pydantic_input(UserLogin)
 class ForgotPasswordInput:
     email: strawberry.auto
 
 # Verificação de código e número
-@pydantic_input(PasswordResetModel)
+@pydantic_input(PasswordReset)
 class VerifyCodeInput:
     token: str
     number: int
 
 # Redefinir nova senha
-@pydantic_input(UserResetPasswordModel, all_fields=True)
+@pydantic_input(UserResetPassword, all_fields=True)
 class UserResetPasswordInput:
     pass
 
 # Filtrar por um determinado campo do model do usuário
-@pydantic_input(FilterByModel, all_fields=True)
+@pydantic_input(FilterBy, all_fields=True)
 class FilterByInput:
     pass
 

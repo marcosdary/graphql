@@ -4,13 +4,19 @@ create type papers as enum (
 );
 
 create table users (
-    "user_id" varchar(255) primary key,
-    "name" varchar(255) not null,
-    "email" varchar(255) not null unique,
-    "password" varchar(255) not null,
-    "is_deleted" boolean default false,
-    "created_at" timestamp default current_timestamp,
-    "updated_at" timestamp default current_timestamp
+    user_id varchar(255) primary key,
+    name varchar(255) not null,
+    email varchar(255) not null unique,
+    role_id varchar(255) not null,
+    password varchar(255) not null,
+    is_deleted boolean default false,
+    created_at timestamp default current_timestamp,
+    updated_at timestamp default current_timestamp,
+    
+    constraint fk_users_role
+        foreign key (role_id)
+        references role(role_id)
+        on delete restrict
 );
 
 create table token (
@@ -24,6 +30,8 @@ create table token (
 create table role_permissions (
     role_id varchar(255) not null,
     permission_id varchar(255) not null,
+    created_at timestamp default current_timestamp,
+	updated_at timestamp default current_timestamp,
 
     primary key (role_id, permission_id),
 
@@ -72,10 +80,12 @@ create index "idx_users_isDeleted" on users("isDeleted");
 
 drop table users;
 drop type roles;
+drop table role_permissions;
 
 select * from users;
 select * from token;
 select * from role;
 select * from permission;
+select * from role_permissions;
 
 

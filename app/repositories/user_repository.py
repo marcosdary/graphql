@@ -11,11 +11,11 @@ from app.models import User
 # DTOs
 from app.dto.user import (
     UserCreateDB,
-    UserUpdateModel,
-    UserLoginModel,
-    FilterByModel
+    UserUpdate,
+    UserLogin,
+    FilterBy
 )
-from app.dto.pagination import PaginationModel
+from app.dto.pagination import Pagination
 
 # Core
 from app.core.config import Auth
@@ -45,16 +45,16 @@ class UserRepository:
 
         if email_exists:
             raise DuplicateReviewError("Email está em uso.")
-            
+
         new_user = User(**create_user.model_dump())
 
         self.session.add(new_user)
         return new_user
 
-    async def get_user_by_email_and_password(self, login: UserLoginModel) -> User:
+    async def get_user_by_email_and_password(self, login: UserLogin) -> User:
         
         query = await self.session.execute(
-            select(User.user_id, User.email, User.role, User.password).where(User.email == login.email)
+            select(User.user_id, User.email, User.password, User.role_id).where(User.email == login.email)
         )
 
         user = query.first()
@@ -64,7 +64,7 @@ class UserRepository:
                 "E-mail ou senha inválidos. " \
                 "Em dúvida, entre em contato com suporte."
             )
-            
+         
         is_valid = await run_in_threadpool(
             Auth().verify_password,
             login.password, 
@@ -72,12 +72,11 @@ class UserRepository:
         )
 
         if not is_valid:
-            raise InvalidCredentialsException("E-mail ou senha inválidos..")
-            
+            raise InvalidCredentialsException("E-mail ou senha inválidos..")   
         return user
     
 
-    async def get_user_by_email(self, login: UserLoginModel) -> User:
+    async def get_user_by_email(self, login: UserLogin) -> User:
        
         user = await self.session.scalar(
             select(User.user_id).where(
@@ -92,7 +91,7 @@ class UserRepository:
         return user 
 
 
-    async def update_user(self, user_update: UserUpdateModel) -> User:
+    async def update_user(self, user_update: UserUpdate) -> User:
      
        
         user = await self.session.scalar(
@@ -131,7 +130,7 @@ class UserRepository:
         return user
         
         
-    async def list_users(self, pagination: PaginationModel, filter_by: FilterByModel = None) -> List[User]:
+    async def list_users(self, pagination: Pagination, filter_by: FilterBy = None) -> List[User]:
        
         query = select(
             User.user_id, User.name, User.email, 
@@ -172,7 +171,7 @@ class UserRepository:
         if not user:
             raise NotFoundError("Usuário não encontrado.")
 
-        if user.role == Roles.SUPER_ADMIN:
+        if user.role.name == Roles.super_admin.value:
             raise ForbiddenActionError(
                 "Ação não permitida. " \
                 "Por favor, entre em contato com o suporte"
@@ -195,7 +194,7 @@ class UserRepository:
             raise exc
             
     # Others methods for count rows
-    def __filters_by(self, filter_by: FilterByModel = None) -> List[bool]:
+    def __filters_by(self, filter_by: FilterBy = None) -> List[bool]:
         filters = []
 
         if not filter_by:

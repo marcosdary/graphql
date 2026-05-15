@@ -2,7 +2,7 @@ from pydantic import BaseModel, field_serializer
 from datetime import datetime
 
 
-class PasswordResetModel(BaseModel):
+class PasswordReset(BaseModel):
     """
     Modelo de dados utilizado para informações de redefinição de senha.
 

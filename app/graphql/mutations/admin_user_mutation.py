@@ -14,7 +14,7 @@ from app.graphql.types.user_type import (
 )
 
 # DTOs
-from app.dto.user import UserReadModel
+from app.dto.user import UserRead
 
 # Repositories
 from app.repositories import UserRepository
@@ -51,7 +51,7 @@ class AdminUserMutation:
             user = await user_repo.create_user(data)
 
             await session.commit()
-            return UserReadModel.model_validate(user)
+            return UserRead.model_validate(user)
         
         except IntegrityError:
             await session.rollback()
@@ -73,7 +73,7 @@ class AdminUserMutation:
             user_repo = UserRepository(session=session)
             user = await user_repo.update_user(data)
             await session.commit()
-            return UserReadModel.model_validate(user)
+            return UserRead.model_validate(user)
         
         except Exception as exc:
             await session.rollback()

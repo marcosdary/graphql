@@ -1,9 +1,9 @@
 from datetime import datetime
 from zoneinfo import ZoneInfo
-from pydantic import field_serializer, BaseModel
+from pydantic import field_serializer
+from app.dto.permission.model import PermissionModel
 
-
-class PermissionRead(BaseModel):
+class PermissionRead(PermissionModel):
 
     permission_id: str
     name: str | None = None

@@ -2,7 +2,7 @@ from pydantic import BaseModel, field_serializer
 from datetime import datetime
 
 
-class TwoFactorAuthModel(BaseModel):
+class TwoFactorAuth(BaseModel):
     """
     Modelo de dados utilizado para autenticação de dois fatores (2FA).
 

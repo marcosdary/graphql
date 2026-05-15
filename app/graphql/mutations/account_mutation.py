@@ -6,7 +6,7 @@ from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from app.repositories.user_repository import UserRepository
 
 # DTOs
-from app.dto.user import UserReadModel
+from app.dto.user import UserRead
 
 # Inputs
 from app.graphql.inputs import (
@@ -49,7 +49,7 @@ class AccountMutation:
 
             await session.commit()
 
-            return UserReadModel.model_validate(updated)
+            return UserRead.model_validate(updated)
         
         except IntegrityError:
             await session.rollback()

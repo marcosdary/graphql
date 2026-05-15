@@ -11,7 +11,7 @@ from app.graphql.permissions import (
 )
 
 # DTOs
-from app.dto.user import UserReadModel
+from app.dto.user import UserRead
 
 # Types
 from app.graphql.types.user_type import UserPublicType
@@ -24,7 +24,7 @@ from app.exceptions import (
 @strawberry.type
 class AccountQuery:
         
-    @strawberry.field(permission_classes=[ApiKeyPermission, SessionPermission])
+    @strawberry.field(permission_classes=[SessionPermission])
     async def me(self, info: strawberry.Info) -> UserPublicType:
         try:
             session = info.context.session
@@ -32,7 +32,7 @@ class AccountQuery:
             user_repo = UserRepository(session=session)
             data = await user_repo.get_user_by_id(user_id)
             
-            return UserReadModel.model_validate(data)
+            return UserRead.model_validate(data)
         
         except NotFoundError as exc:
             raise StrawberryGraphQLError(message=str(exc))

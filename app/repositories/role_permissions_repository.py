@@ -16,18 +16,13 @@ class RolePermissionsRepository:
     def __init__(self, session: AsyncSession):
         self.session = session
 
-    async def create(self, role_id: str, permission_id: str) -> RolePermissions:
-        model = RolePermissions(role_id=role_id, permission_id=permission_id)
-        self.session.add(model)
-        return model
-    
     async def list_permissions_by_role(self, role_id: str) -> List[RolePermissions]:  
         query = select(RolePermissions).where(RolePermissions.role_id == role_id)
         list_query = query.order_by(RolePermissions.created_at.desc())        
         stmt = await self.session.scalars(
             list_query
         )
-        rows = stmt     
+        rows = stmt   
         return rows
     
     async def list_roles_by_permission(self, permission_id: str) -> List[RolePermissions]:  
@@ -36,7 +31,7 @@ class RolePermissionsRepository:
         stmt = await self.session.scalars(
             list_query
         )
-        rows = stmt     
+        rows = stmt
         return rows
 
     async def delete(self, role_id: str, permission_id: str) -> None:

@@ -26,7 +26,6 @@ class PermissionRepository:
     async def create(self, schemas: PermissionCreate) -> Permission: 
         models = []
         for line in schemas: 
-            
             models.append(Permission(**line.model_dump()))
 
         self.session.add_all(models)

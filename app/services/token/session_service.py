@@ -1,7 +1,7 @@
 from jwt.exceptions import InvalidSignatureError
 
 from app.services.token.base import BaseService
-from app.dto.session import SessionModel
+from app.dto.session import Session
 from app.core.config import settings
 
 from app.exceptions import SessionError
@@ -11,9 +11,9 @@ class SessionService(BaseService):
         self._session_key = settings.SESSION_KEY
         super().__init__()
 
-    def create_session(self, **kwargs) -> SessionModel:     
+    def create_session(self, **kwargs) -> Session:     
         token = self._encode(kwargs, self._session_key)
-        return SessionModel(
+        return Session(
             session_id=token
         )
 

@@ -5,7 +5,7 @@ from random import randint
 from app.services.token.base import BaseService
 from app.core.config import settings
 from app.core.constants import ExpirationTimes
-from app.dto.password_reset import PasswordResetModel
+from app.dto.password_reset import PasswordReset
 from app.exceptions import UnprocessableEntity, InvalidFieldsException
 
 class PasswordResetService(BaseService):
@@ -28,14 +28,14 @@ class PasswordResetService(BaseService):
 
     async def _create_password_reset_token(
         self, **kwargs
-    ) -> PasswordResetModel:
+    ) -> PasswordReset:
 
         number = randint(100_000, 999_999)
         token = self._encode(kwargs, self._password_reset_key)
 
         await self._store_with_expiration(token, number, self._password_reset_expiration)
 
-        return PasswordResetModel(
+        return PasswordReset(
             token=token,
             number=number,
             expires_at=datetime.now() + timedelta(seconds=self._password_reset_expiration)

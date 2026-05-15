@@ -1,6 +1,6 @@
 from typing import List
 from pydantic import RootModel
 
-from app.dto.user import UserReadModel
+from app.dto.user.read import UserRead
 
-class UserListModel(RootModel[List[UserReadModel]]): pass
+class UserList(RootModel[List[UserRead]]): pass

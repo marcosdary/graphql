@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
 from app.services.token.base import BaseService
-from app.dto.two_factor_auth import TwoFactorAuthModel
+from app.dto.two_factor_auth import TwoFactorAuth
 
 # Configs
 from app.core.config import settings
@@ -26,7 +26,7 @@ class TwoFactorAuthService(BaseService):
 
     async def create_two_factor_token(
         self, user_id: str, role: str
-    ) -> TwoFactorAuthModel:
+    ) -> TwoFactorAuth:
         sp = settings.zone_info
         iat = datetime.now(tz=sp)
         exp = iat + timedelta(minutes=self._exp_two_factor_auth)
@@ -45,7 +45,7 @@ class TwoFactorAuthService(BaseService):
 
         await self._store_with_expiration(token, number, self._exp_two_factor_auth * 60)
         
-        return TwoFactorAuthModel(
+        return TwoFactorAuth(
             token=token,
             number=number
         )

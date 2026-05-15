@@ -2,7 +2,7 @@ from datetime import datetime
 from pydantic import BaseModel, field_serializer
 
 
-class SessionModel(BaseModel):
+class Session(BaseModel):
     """
     Modelo de dados que representa uma sessão de usuário.
 

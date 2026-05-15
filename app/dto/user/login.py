@@ -5,7 +5,7 @@ from app.dto.user.model import UserModel
 from app.exceptions import InvalidFieldsException
 
 
-class UserLoginModel(UserModel):
+class UserLogin(UserModel):
     """
     Modelo de dados utilizado para autenticação de usuários.
 

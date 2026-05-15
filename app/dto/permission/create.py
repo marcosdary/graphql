@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from app.dto.permission.model import PermissionModel
 
-class PermissionCreate(BaseModel):
+class PermissionCreate(PermissionModel):
     name: str

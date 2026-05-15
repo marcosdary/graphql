@@ -5,7 +5,7 @@ from app.core.config import Auth
 from app.core.constants import Roles
 
 
-class UserUpdateModel(UserModel):
+class UserUpdate(UserModel):
     """
     Modelo de dados utilizado para atualização de informações de usuários.
 

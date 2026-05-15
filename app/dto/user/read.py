@@ -1,12 +1,11 @@
 from datetime import datetime
-from zoneinfo import ZoneInfo
 from pydantic import field_serializer
 
 from app.dto.user.model import UserModel
-from app.dto.role import RoleRead
+from app.core.config import settings
 
 
-class UserReadModel(UserModel):
+class UserRead(UserModel):
     """
     Modelo de leitura de dados de usuários.
 
@@ -28,8 +27,8 @@ class UserReadModel(UserModel):
     user_id: str
     name: str | None = None
     email: str
+    role_id: str | None = None
     password: str | None = None
-    role: RoleRead | None = None
     is_deleted: bool | None = None
     created_at: datetime | None = None
     updated_at: datetime | None = None
@@ -49,4 +48,4 @@ class UserReadModel(UserModel):
         if value is None:
             return None
         
-        return value.astimezone(ZoneInfo("America/Sao_Paulo")).isoformat()
+        return value.astimezone(settings.zone_info).isoformat()

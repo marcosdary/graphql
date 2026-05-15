@@ -1,5 +1,5 @@
 from app.config import redis_client_async
-from app.dto.user import UserListModel
+from app.dto.user import UserList
 from app.repositories import UserRepository
 
 class UserCacheService:
@@ -10,12 +10,12 @@ class UserCacheService:
     async def get_cached_data(self, key: str):
         return await redis_client_async.get(key)
 
-    async def list_users(self, page: int, limit: int) -> UserListModel:
+    async def list_users(self, page: int, limit: int) -> UserList:
         key = f"users:{page}:{limit}"
         cached = await self.get_cached_data(key)
 
         if cached:
-            return UserListModel.model_validate_json(cached)
+            return UserList.model_validate_json(cached)
         
         users = await self._user_repo.list_users(page, limit)
       

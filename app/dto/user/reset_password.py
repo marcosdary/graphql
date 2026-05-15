@@ -1,7 +1,7 @@
 from app.dto.user.model import UserModel
 
 
-class UserResetPasswordModel(UserModel):
+class UserResetPassword(UserModel):
     """
     Modelo de dados utilizado para redefinição de senha de usuários.
 

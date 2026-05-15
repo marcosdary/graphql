@@ -4,9 +4,20 @@ from typing import List
 from strawberry.exceptions import StrawberryGraphQLError
 from datetime import datetime
 
+
+# Services
 from app.services import token
+
+# Settings
 from app.core.config import settings
-from app.exceptions import InvalidFieldsException, ExpirationError
+
+# Exceptions
+from app.exceptions import (
+    InvalidFieldsException, 
+    ExpirationError,
+    ForbiddenActionError,
+    ProtectedRouteError
+)
 
 def get_resolvers(path: Path, resolvers: List[str] = []) -> List[str]:
     resolvers.append(path.key)
@@ -15,7 +26,6 @@ def get_resolvers(path: Path, resolvers: List[str] = []) -> List[str]:
         return resolvers
 
     return get_resolvers(path.prev, resolvers)
-
 
 class SessionPermission(BasePermission):
 
@@ -30,9 +40,8 @@ class SessionPermission(BasePermission):
             # que ele esteja presente (fallback) e recuperamos o payload.
             request = info.context.request
             header: dict = request.headers
-            params: dict = request.query_params
             
-            resolvers = ":".join(key for key in get_resolvers(info.path))
+            resolver = ":".join(key for key in sorted(get_resolvers(info.path), reverse=True))
            
             auth = header.get("Authorization")
 
@@ -49,17 +58,16 @@ class SessionPermission(BasePermission):
                 return False
             
             response = self._session_service.verify_session(session_id=session_id)
-
-            if params.get("logout") == "true":
-                return True
-            
+            scopes = response.get("scopes")
             sp = settings.zone_info
             current = datetime.now(tz=sp).timestamp()
 
             exp = response.get("exp")
-
             if exp <= current:
                 raise ExpirationError("Recurso ou sessão expirada")
+            
+            if resolver not in scopes:
+                raise ProtectedRouteError("Acesso a rota protegida sem permissão adequada.")
 
             info.context.user_id = response.get("sub")
             info.context.role = response.get("role")

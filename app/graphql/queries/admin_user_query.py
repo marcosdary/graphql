@@ -9,7 +9,7 @@ from typing import Optional
 from app.repositories.user_repository import UserRepository
 
 # DTOs
-from app.dto.user import UserReadModel, UserListModel
+from app.dto.user import UserList, UserRead
 
 # Permissions
 from app.graphql.permissions import (
@@ -49,14 +49,14 @@ class AdminUserQuery:
                 pagination=pagination
             )
             
-            return UserListModel.model_validate([UserReadModel.model_validate(u) for u in users])
+            return UserList.model_validate([UserRead.model_validate(u) for u in users])
         
         except Exception as exc:
             raise StrawberryGraphQLError(message=str(exc))
                 
         
     @strawberry.field(permission_classes=[ApiKeyPermission, SessionPermission, RolePermission])
-    async def getById(self, info: strawberry.Info, userId: str) -> UserPrivateType:
+    async def get_by_id(self, info: strawberry.Info, userId: str) -> UserPrivateType:
         try:
             session = info.context.session
 
@@ -64,7 +64,7 @@ class AdminUserQuery:
 
             user = await user_repo.get_user_by_id(user_id=userId)
             
-            return UserReadModel.model_validate(user)
+            return UserRead.model_validate(user)
 
         except Exception as exc:
             raise StrawberryGraphQLError( message=str(exc))
