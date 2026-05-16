@@ -6,7 +6,10 @@ from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from app.repositories.user_repository import UserRepository
 
 # DTOs
-from app.dto.user import UserRead
+from app.dto.user import (
+    UserRead,
+    UserUpdateDB
+)
 
 # Inputs
 from app.graphql.inputs import (
@@ -15,8 +18,7 @@ from app.graphql.inputs import (
 
 # Permissions
 from app.graphql.permissions import (
-    SessionPermission, 
-    ApiKeyPermission,
+    SessionPermission
 )
 
 # Types
@@ -34,26 +36,33 @@ from app.exceptions import (
 @strawberry.type
 class AccountMutation:
           
-    @strawberry.mutation(permission_classes=[ApiKeyPermission, SessionPermission])
+    @strawberry.mutation(permission_classes=[SessionPermission])
     async def update_profile(self, info: strawberry.Info, schema: UserUpdatePublicInput) -> UserPublicType:  
         try:
             session = info.context.session
-            user = info.context["user"]
+            user_id = info.context.user_id
 
             payload = schema.to_pydantic()
-            user_update = payload.model_copy(update={"userId": user["userId"]})
+
+            user_update = UserUpdateDB(
+                user_id=user_id,
+                email=payload.email,
+                name=payload.name,
+                password=payload.password
+            )
             
             user_repo = UserRepository(session=session)
 
             updated = await user_repo.update_user(user_update)
 
             await session.commit()
+            await session.refresh(updated, ["role"])
 
             return UserRead.model_validate(updated)
         
         except IntegrityError:
             await session.rollback()
-            raise StrawberryGraphQLError(message="Não foi possível criar o usuário.")
+            raise StrawberryGraphQLError(message="Não foi possível atualizar o usuário.")
         
         except DuplicateReviewError as exc:
             raise StrawberryGraphQLError(message=str(exc))
@@ -65,7 +74,7 @@ class AccountMutation:
             raise StrawberryGraphQLError(message=str(exc))
         
 
-    @strawberry.mutation(permission_classes=[ApiKeyPermission, SessionPermission])
+    @strawberry.mutation(permission_classes=[SessionPermission])
     async def delete_account(self, info) -> None:
         try:
             session = info.context.session

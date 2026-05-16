@@ -15,17 +15,16 @@ from app.core.config import settings
 from app.exceptions import (
     InvalidFieldsException, 
     ExpirationError,
-    ForbiddenActionError,
     ProtectedRouteError
 )
 
 def get_resolvers(path: Path, resolvers: List[str] = []) -> List[str]:
-    resolvers.append(path.key)
+    keys = []
 
-    if not isinstance(path.prev, Path):
-        return resolvers
-
-    return get_resolvers(path.prev, resolvers)
+    while path:
+        keys.append(path.key)
+        path = path.prev
+    return keys
 
 class SessionPermission(BasePermission):
 
@@ -40,8 +39,9 @@ class SessionPermission(BasePermission):
             # que ele esteja presente (fallback) e recuperamos o payload.
             request = info.context.request
             header: dict = request.headers
-            
-            resolver = ":".join(key for key in sorted(get_resolvers(info.path), reverse=True))
+            paths = get_resolvers(info.path)
+            paths.reverse()
+            resolver = ":".join(key for key in paths)
            
             auth = header.get("Authorization")
 
@@ -61,11 +61,11 @@ class SessionPermission(BasePermission):
             scopes = response.get("scopes")
             sp = settings.zone_info
             current = datetime.now(tz=sp).timestamp()
-
+            
             exp = response.get("exp")
             if exp <= current:
                 raise ExpirationError("Recurso ou sessão expirada")
-            
+
             if resolver not in scopes:
                 raise ProtectedRouteError("Acesso a rota protegida sem permissão adequada.")
 

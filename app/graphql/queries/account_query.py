@@ -6,8 +6,7 @@ from app.repositories.user_repository import UserRepository
 
 # Permissions
 from app.graphql.permissions import (
-    SessionPermission, 
-    ApiKeyPermission
+    SessionPermission
 )
 
 # DTOs

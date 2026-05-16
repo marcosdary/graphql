@@ -11,7 +11,7 @@ from app.models import User
 # DTOs
 from app.dto.user import (
     UserCreateDB,
-    UserUpdate,
+    UserUpdateDB,
     UserLogin,
     FilterBy
 )
@@ -46,10 +46,10 @@ class UserRepository:
         if email_exists:
             raise DuplicateReviewError("Email está em uso.")
 
-        new_user = User(**create_user.model_dump())
+        user = User(**create_user.model_dump())
 
-        self.session.add(new_user)
-        return new_user
+        self.session.add(user)
+        return user
 
     async def get_user_by_email_and_password(self, login: UserLogin) -> User:
         
@@ -91,9 +91,7 @@ class UserRepository:
         return user 
 
 
-    async def update_user(self, user_update: UserUpdate) -> User:
-     
-       
+    async def update_user(self, user_update: UserUpdateDB) -> User:
         user = await self.session.scalar(
             select(User).where(
                 User.user_id==user_update.user_id, 
@@ -103,12 +101,6 @@ class UserRepository:
                     
         if not user:
             raise NotFoundError("Usuário não encontrado ou removido do sistema.")
-                
-        if user_update.role == Roles.SUPER_ADMIN:
-            raise DuplicateReviewError(
-                "Registro de Administrador negado, pois só pode ter um único master. " \
-                "Entre em contato com o suporte para potenciais mudanças."
-            )
 
         for key, value in user_update.model_dump().items():
             if value is not None:
@@ -133,9 +125,7 @@ class UserRepository:
     async def list_users(self, pagination: Pagination, filter_by: FilterBy = None) -> List[User]:
        
         query = select(
-            User.user_id, User.name, User.email, 
-            User.role, User.is_deleted, User.created_at, 
-            User.updated_at
+            User
         )
 
         filters = self.__filters_by(filter_by=filter_by)
@@ -153,11 +143,11 @@ class UserRepository:
         if filters:
             list_query = list_query.where(and_(*filters))
             
-        stmt = await self.session.execute(
+        stmt = await self.session.scalars(
             list_query
         )
 
-        rows = stmt.all()
+        rows = stmt
             
         return rows
 
@@ -209,11 +199,6 @@ class UserRepository:
         if filter_by.is_deleted is not None:
             filters.append(
                 User.is_deleted == filter_by.is_deleted
-            )
-
-        if filter_by.role:
-            filters.append(
-                User.role == filter_by.role
             )
     
         if filter_by.created_at:

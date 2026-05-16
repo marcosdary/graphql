@@ -37,5 +37,5 @@ class User(Base):
     role: Mapped["Role"] = relationship(
         "Role",
         back_populates="users",
-        lazy="joined"
+        lazy="selectin"
     )

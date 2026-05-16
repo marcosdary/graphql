@@ -1,6 +1,9 @@
 from pydantic import field_serializer
 
+# DTOs
 from app.dto.user.model import UserModel
+
+# Core
 from app.core.config import Auth
 from app.core.constants import Roles
 

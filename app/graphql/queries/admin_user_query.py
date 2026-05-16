@@ -13,9 +13,7 @@ from app.dto.user import UserList, UserRead
 
 # Permissions
 from app.graphql.permissions import (
-    SessionPermission,
-    RolePermission,
-    ApiKeyPermission
+    SessionPermission
 )
 
 # Inputs
@@ -30,7 +28,7 @@ from app.graphql.types.user_type import UserListType, UserPrivateType
 @strawberry.type
 class AdminUserQuery:
 
-    @strawberry.field(permission_classes=[ApiKeyPermission, SessionPermission, RolePermission], extensions=[InputMutationExtension()])
+    @strawberry.field(permission_classes=[SessionPermission], extensions=[InputMutationExtension()])
     async def list(
         self, 
         info: strawberry.Info,
@@ -48,14 +46,13 @@ class AdminUserQuery:
                 filter_by=filter_by, 
                 pagination=pagination
             )
-            
-            return UserList.model_validate([UserRead.model_validate(u) for u in users])
+        
+            return UserList.model_validate(users)
         
         except Exception as exc:
             raise StrawberryGraphQLError(message=str(exc))
                 
-        
-    @strawberry.field(permission_classes=[ApiKeyPermission, SessionPermission, RolePermission])
+    @strawberry.field(permission_classes=[SessionPermission])
     async def get_by_id(self, info: strawberry.Info, userId: str) -> UserPrivateType:
         try:
             session = info.context.session

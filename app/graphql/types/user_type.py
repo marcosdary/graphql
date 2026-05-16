@@ -1,6 +1,7 @@
 from strawberry.experimental.pydantic import type as pydantic_type
 import strawberry
 from app.dto.user import UserRead, UserList
+from app.graphql.types.role_type import RoleType
     
 @pydantic_type(UserRead)
 class UserPublicType:
@@ -16,6 +17,5 @@ class UserPrivateType:
 @pydantic_type(UserList, all_fields=True)
 class UserListType:
     pass
-
 
 

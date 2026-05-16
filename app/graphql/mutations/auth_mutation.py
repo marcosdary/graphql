@@ -18,18 +18,13 @@ from app.graphql.inputs import (
     UserPrivateInput
 )
 
-# Permissions
-from app.graphql.permissions import (
-    ApiKeyPermission,
-)
-
 # Responses
 from app.graphql.utils import create_access_token
 
 # Types
 from app.graphql.types.two_factor_auth_type import TwoFactorAuthType
 from app.graphql.types.password_reset_type import PasswordResetType
-from app.graphql.types.user_type import UserPublicType, UserPrivateType
+from app.graphql.types.user_type import UserPublicType
 from app.graphql.types.session_type import SessionType
 
 # Settings
@@ -51,7 +46,7 @@ from app.exceptions import (
 @strawberry.type
 class AuthMutation:
 
-    @strawberry.mutation(permission_classes=[ApiKeyPermission])
+    @strawberry.mutation
     async def register(self, info: strawberry.Info, schema: UserInput) -> UserPublicType:
         try:
             session = info.context.session

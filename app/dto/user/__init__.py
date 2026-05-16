@@ -1,5 +1,6 @@
 from app.dto.user.create import UserCreate
 from app.dto.user.update import UserUpdate
+from app.dto.user.update_db import UserUpdateDB
 from app.dto.user.login import UserLogin
 from app.dto.user.reset_password import UserResetPassword
 from app.dto.user.list import UserList

@@ -78,6 +78,8 @@ create index "idx_users_get_by_id" on users("isDeleted", "userId");
 
 create index "idx_users_isDeleted" on users("isDeleted");
 
+
+
 drop table users;
 drop type roles;
 drop table role_permissions;
@@ -86,6 +88,12 @@ select * from users;
 select * from token;
 select * from role;
 select * from permission;
-select * from role_permissions;
+
+
+
+
+select p.permission_id , p.name, r.role_id, r.name from role_permissions as rp
+inner join role as r on rp.role_id = r.role_id 
+inner join permission as p on rp.permission_id = p.permission_id;
 
 

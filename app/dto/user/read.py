@@ -1,7 +1,12 @@
 from datetime import datetime
 from pydantic import field_serializer
+from typing import Optional
 
+# Base Model Pydantic
 from app.dto.user.model import UserModel
+from app.dto.role import RoleRead
+
+# Settings
 from app.core.config import settings
 
 
@@ -27,8 +32,7 @@ class UserRead(UserModel):
     user_id: str
     name: str | None = None
     email: str
-    role_id: str | None = None
-    password: str | None = None
+    role: Optional[RoleRead] = None
     is_deleted: bool | None = None
     created_at: datetime | None = None
     updated_at: datetime | None = None

@@ -34,8 +34,7 @@ async def create_access_token(session: AsyncSession, user_id: str, role: str):
     exp = datetime.now(tz=sp) + timedelta(minutes=ExpirationTimes.SESSION_EXPIRATION.value)
 
     scopes = await get_permissions(session, role) 
-    print(scopes)
-
+    
     return session_service.create_session(
         sub=user_id, # subject, quem é o dono/assunto do token, normalmente o ID do usuário.
         type="session",
