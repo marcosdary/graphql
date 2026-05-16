@@ -15,7 +15,6 @@ class Settings(BaseSettings):
     DATABASE_URL: str
     DATABASE_URL_ASYNC: str
 
-    CREATE_API_KEY: str
     PASSWORD_RESET_KEY: str
     TWO_FACTOR_AUTH_KEY: str
     SESSION_KEY: str

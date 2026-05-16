@@ -1,10 +1,7 @@
-from pydantic import field_serializer
-
 # DTOs
 from app.dto.user.model import UserModel
 
 # Core
-from app.core.config import Auth
 from app.core.constants import Roles
 
 
@@ -27,20 +24,3 @@ class UserUpdate(UserModel):
     role: Roles | None = None
     password: str | None = None
 
-    @field_serializer("password", mode="plain")
-    def serialize_password(self, value: str) -> str:
-        """
-        Serializa a senha fornecida aplicando hash antes da persistência.
-
-        Esta função só aplica o hash se a senha for fornecida.
-        Caso seja None ou string vazia, retorna o valor sem alterações.
-
-        Args:
-            value (str): Senha em texto puro fornecida pelo usuário.
-
-        Returns:
-            str: Senha criptografada ou o valor original se não houver senha.
-        """
-        if value:
-            return Auth.hash_password(value)
-        return value
