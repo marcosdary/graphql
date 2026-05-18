@@ -49,6 +49,8 @@ class UserRepository:
         user = User(**create_user.model_dump())
 
         self.session.add(user)
+
+        await self.session.flush()
         return user
 
     async def get_user_by_email_and_password(self, login: UserLogin) -> User:

@@ -53,11 +53,12 @@ class AccountMutation:
             
             user_repo = UserRepository(session=session)
 
-            updated = await user_repo.update_user(user_update)
+            await user_repo.update_user(user_update)
 
             await session.commit()
-            await session.refresh(updated, ["role"])
 
+            updated = await user_repo.get_user_by_id(user_id=user_id)
+        
             return UserRead.model_validate(updated)
         
         except IntegrityError:
