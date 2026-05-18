@@ -86,8 +86,24 @@ drop table role_permissions;
 
 select * from users;
 select * from token;
-select * from role;
+select * from role where role_id = 'f20dcb79-e960-41ce-8055-80b5b3fb87b0';
 select * from permission;
+
+delete from users where user_id = '3396441b-b0cd-48cb-96ac-b13ae55115f4';
+
+update permission as p 
+set 
+	name=v.name
+from (
+	values
+	('db4d790b-5e36-4f27-b9da-e75a621deb8e', 'auth:verifyTwoFactor'),
+	('7acf8f02-687c-46d4-863f-de41f03a210d', 'auth:resetPassword'),
+	('15263b82-03d6-4299-9353-debee13417c9', 'auth:forgotPassword'),
+	('681de4a5-426b-4f96-97d7-1c5a866a5090', 'user:deleteAccount'),
+	('7b0c22c5-e394-424a-b9b6-f89c9f727680', 'user:updateProfile'),
+	('62614608-f9f9-4919-9c5b-1f7fa9656c86', 'admin:users:getById')
+) as v(permission_id, name)
+where p.permission_id = v.permission_id ;
 
 
 

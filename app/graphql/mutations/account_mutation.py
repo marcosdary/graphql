@@ -78,10 +78,9 @@ class AccountMutation:
     async def delete_account(self, info) -> None:
         try:
             session = info.context.session
-            user = info.context["user"]
-            userId = user["sub"]
+            user_id = info.context.user_id
             user_repo = UserRepository(session=session)
-            await user_repo.delete_user(userId)
+            await user_repo.delete_user(user_id)
             await session.commit()
             return 
         
