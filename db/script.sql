@@ -89,7 +89,7 @@ select * from token;
 select * from role where role_id = 'f20dcb79-e960-41ce-8055-80b5b3fb87b0';
 select * from permission;
 
-delete from users where user_id = '3396441b-b0cd-48cb-96ac-b13ae55115f4';
+delete from users where user_id in ('6ac1544a-a7d9-4e2c-9f88-7f58e86e34ba', '2b47bed5-6d45-499e-9568-cec0343f01fb'); 
 
 update permission as p 
 set 
