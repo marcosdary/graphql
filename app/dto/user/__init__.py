@@ -7,3 +7,4 @@ from app.dto.user.list import UserList
 from app.dto.user.filter_by import FilterBy
 from app.dto.user.create_db import UserCreateDB
 from app.dto.user.read import UserRead
+from app.dto.user.user_google import UserGoogle

@@ -29,6 +29,7 @@ from app.exceptions import (
     ForbiddenActionError
 )
 
+
 class UserRepository:
 
     def __init__(self, session: AsyncSession):

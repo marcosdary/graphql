@@ -1,6 +1,4 @@
 from strawberry.fastapi import BaseContext
-from functools import cached_property
-from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.constants import Roles

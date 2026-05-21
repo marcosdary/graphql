@@ -5,6 +5,7 @@ create type papers as enum (
 
 create table users (
     user_id varchar(255) primary key,
+    google_id varchar(255),
     name varchar(255) not null,
     email varchar(255) not null unique,
     role_id varchar(255) not null,

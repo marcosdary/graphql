@@ -19,8 +19,12 @@ class Settings(BaseSettings):
     TWO_FACTOR_AUTH_KEY: str
     SESSION_KEY: str
 
-    API_KEY: str
     ALGORITHM: str
+
+    CLIENT_GOOGLE_ID: str
+    CLIENT_GOOGLE_SECRET_ID: str    
+    URL_GOOGLE_METADATA: str
+    REDIRECT_URI: str
 
     zone_info: Optional[ZoneInfo] = ZoneInfo("America/Sao_Paulo") 
 
