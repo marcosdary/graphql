@@ -46,7 +46,7 @@ class UserRepository:
 
         if email_exists:
             raise DuplicateReviewError("Email está em uso.")
-
+        
         user = User(**create_user.model_dump())
 
         self.session.add(user)
@@ -112,11 +112,14 @@ class UserRepository:
         return user
             
 
-    async def get_user_by_id(self, user_id: str) -> User:
-       
+    async def get_user_by_id(self, id: str, is_google: bool = False) -> User:
+        query = select(User).where(User.user_id == id)
+
+        if is_google:
+            query = select(User).where(User.google_id == id)
 
         user = await self.session.scalar(
-            select(User).where(User.user_id == user_id)
+            query
         )
             
         if not user:

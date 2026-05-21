@@ -57,7 +57,7 @@ class AccountMutation:
 
             await session.commit()
 
-            updated = await user_repo.get_user_by_id(user_id=user_id)
+            updated = await user_repo.get_user_by_id(id=user_id)
         
             return UserRead.model_validate(updated)
         

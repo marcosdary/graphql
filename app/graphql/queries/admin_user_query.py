@@ -59,7 +59,7 @@ class AdminUserQuery:
 
             user_repo = UserRepository(session=session)
 
-            user = await user_repo.get_user_by_id(user_id=userId)
+            user = await user_repo.get_user_by_id(id=userId)
             
             return UserRead.model_validate(user)
 

@@ -61,7 +61,7 @@ class AuthMutation:
             user = await user_repo.create_user(data)
             
             await session.commit()
-            info = await user_repo.get_user_by_id(user_id=user.user_id)
+            info = await user_repo.get_user_by_id(id=user.user_id)
             return UserRead.model_validate(info)
         
         except IntegrityError:

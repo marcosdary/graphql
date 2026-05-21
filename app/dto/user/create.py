@@ -27,7 +27,7 @@ class UserCreate(UserModel):
             uma senha numérica aleatória será gerada automaticamente.
         role (str | None): Papel do usuário no sistema. O padrão é "user".
     """
-
+    google_id: str | None
     name: str
     email: str
     password: str | None = str(randint(100_000, 999_999))
