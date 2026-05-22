@@ -1,16 +1,38 @@
 from fastapi import APIRouter, status, Depends
+from fastapi.exceptions import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.exc import IntegrityError
 from fastapi.responses import RedirectResponse
 from httpx import AsyncClient
 
+# Core
 from app.core.config import settings, get_session
-from app.dto.user import UserGoogle, UserCreateDB, UserCreate
-from app.repositories import UserRepository
-from app.exceptions import NotFoundError
+from app.core.constants import Roles
+
+# Responses
+from app.graphql.utils import create_access_token
+
+# DTOs
+from app.dto.user import (
+    UserGoogle, 
+    UserCreateDB, 
+    UserCreate,
+    UserLogin
+)
+from app.dto.session import Session
+
+# Repository
+from app.repositories import UserRepository, RoleRepository
+
+# Exceptions
+from app.exceptions import (
+    NotFoundError,
+    InvalidCredentialsException
+)
 
 router = APIRouter(tags=["Auth"])
 
-@router.get("/login/google", status_code=status.HTTP_307_TEMPORARY_REDIRECT)
+@router.get("/google/login", status_code=status.HTTP_307_TEMPORARY_REDIRECT)
 async def login_google():
     url = (
         f"{settings.URL_GOOGLE_METADATA}"
@@ -22,7 +44,7 @@ async def login_google():
 
     return RedirectResponse(url)
 
-@router.get("/callback", response_model=UserGoogle)
+@router.get("/callback", response_model=Session)
 async def callback(code: str, session: AsyncSession =  Depends(get_session)):
     async with AsyncClient() as client:
         response = await client.post(
@@ -36,6 +58,13 @@ async def callback(code: str, session: AsyncSession =  Depends(get_session)):
             },
         )
 
+        if response.status_code == status.HTTP_400_BAD_REQUEST:
+            raise HTTPException(
+                detail="Falha ao acessar o servidor.", 
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+        
+        
         data = response.json()
 
         response = await client.get(
@@ -44,25 +73,60 @@ async def callback(code: str, session: AsyncSession =  Depends(get_session)):
                 "Authorization": f"Bearer {data['access_token']}"
             }
         )
+
+        if response.status_code == status.HTTP_400_BAD_REQUEST:
+            raise HTTPException(
+                detail="Falha ao acessar o servidor.", 
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
         
     data = response.json()
 
     user_google = UserGoogle.model_validate(data)
-    user_repo = UserRepository(session)
+
+    role_repo = RoleRepository(session=session)
+    user_repo = UserRepository(session=session)
+
+    user = None
     try: 
-        user = user_repo.get_user_by_id(schema.sub)
-    except NotFoundError as exc:
+        user = await user_repo.get_user_by_email(UserLogin(email=user_google.email))
+    
+    except InvalidCredentialsException:
+        role_id = await role_repo.get_role_by_name(Roles.user.name)
         data = UserCreate(
             name=user_google.name,
-            email=user_google.email,
-            google_id=user_google.sub
+            email=user_google.email
         )
-        schema = UserCreateDB(
-            name=schema.name,
-            email=schema.email,
-            google_id=schema.sub,
-            password=schema.password
+        data = UserCreateDB(role_id=role_id, **data.model_dump(exclude=["role"]))
+        user = await user_repo.create_user(data)
+        await session.commit()
+
+    except IntegrityError:
+        await session.rollback()
+        raise HTTPException(
+            detail="Não foi possível criar o usuário.", 
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY
         )
-        user = user_repo.create_user(schema)
+
+    except Exception as exc:
+        await session.rollback()
+        raise HTTPException(
+            detail=str(exc), 
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
+    if not user:
+        raise HTTPException(
+            detail="Informação do usuário não encontrada. Tente novamente.", 
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY
+        )
+
+    session_new = await create_access_token(
+        session=session,
+        user_id=user.user_id, 
+        role=user.role_id
+    )
+
+    return session_new
+
         
-    return user

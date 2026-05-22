@@ -6,7 +6,7 @@ from sqlalchemy.exc import IntegrityError
 from app.repositories import UserRepository, RoleRepository
 
 # DTOs
-from app.dto.user import UserUpdate, UserRead, UserCreateDB
+from app.dto.user import UserRead, UserCreateDB, UserUpdateDB
 
 # Inputs
 from app.graphql.inputs import (
@@ -14,8 +14,7 @@ from app.graphql.inputs import (
     UserLoginInput,
     Verify2FAInput,
     ForgotPasswordInput,
-    UserResetPasswordInput,
-    UserPrivateInput
+    UserResetPasswordInput
 )
 
 # Responses
@@ -42,6 +41,7 @@ from app.exceptions import (
     InvalidCredentialsException,
     ForbiddenActionError
 )
+
 
 @strawberry.type
 class AuthMutation:
@@ -123,12 +123,12 @@ class AuthMutation:
             password_reset_service = token.PasswordResetService()
 
             user_repo = UserRepository(session=session)
-            user_id = await user_repo.get_user_by_email(schema)
+            user = await user_repo.get_user_by_email(schema)
     
             forgot = await password_reset_service.handle(
                 action="forgot", 
                 payload={
-                    "user_id": user_id
+                    "user_id": user.user_id
                 }
             )
             
@@ -158,7 +158,7 @@ class AuthMutation:
             user_repo = UserRepository(session=session)
 
             user = await user_repo.update_user( 
-                user_update=UserUpdate(
+                user_update=UserUpdateDB(
                     user_id=user_id,
                     password=data.password
                 )

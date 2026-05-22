@@ -82,7 +82,7 @@ class UserRepository:
     async def get_user_by_email(self, login: UserLogin) -> User:
        
         user = await self.session.scalar(
-            select(User.user_id).where(
+            select(User).where(
                 User.email==login.email, 
                 User.is_deleted != True
             )
@@ -104,7 +104,7 @@ class UserRepository:
                     
         if not user:
             raise NotFoundError("Usuário não encontrado ou removido do sistema.")
-
+       
         for key, value in user_update.model_dump().items():
             if value is not None:
                 setattr(user, key, value)

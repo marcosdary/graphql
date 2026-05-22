@@ -23,7 +23,6 @@ class User(Base):
     __tablename__ = "users"
 
     user_id: Mapped[str] = mapped_column(primary_key=True, default=lambda: str(uuid4()))
-    google_id: Mapped[str]
     name: Mapped[str] = mapped_column(nullable=False)
     
     email: Mapped[str] = mapped_column(nullable=False, unique=True)
