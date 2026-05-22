@@ -6,13 +6,13 @@ from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from app.core.constants import Roles
 
 # Inputs
-from app.graphql.inputs import (
+from app.routers.v1.graphql.inputs import (
     UserPrivateInput,
     UserUpdatePrivateInput
 )
 
 # Types
-from app.graphql.types.user_type import (
+from app.routers.v1.graphql.types.user_type import (
     UserPrivateType
 )
 
@@ -27,7 +27,7 @@ from app.dto.user import (
 from app.repositories import UserRepository, RoleRepository
 
 # Permissions
-from app.graphql.permissions import (
+from app.routers.v1.graphql.permissions import (
     SessionPermission
 )
 

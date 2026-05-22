@@ -5,7 +5,7 @@ from strawberry.exceptions import StrawberryGraphQLError
 from app.repositories.user_repository import UserRepository
 
 # Permissions
-from app.graphql.permissions import (
+from app.routers.v1.graphql.permissions import (
     SessionPermission
 )
 
@@ -13,7 +13,7 @@ from app.graphql.permissions import (
 from app.dto.user import UserRead
 
 # Types
-from app.graphql.types.user_type import UserPublicType
+from app.routers.v1.graphql.types.user_type import UserPublicType
 
 # Exceptions
 from app.exceptions import (

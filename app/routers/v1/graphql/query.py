@@ -1,6 +1,6 @@
 import strawberry
 
-from app.graphql.queries import AccountQuery, AdminQuery
+from app.routers.v1.graphql.queries import AccountQuery, AdminQuery
 
 @strawberry.type
 class Query:

@@ -1,7 +1,7 @@
 import strawberry
 
 # Queries
-from app.graphql.queries.admin_user_query import AdminUserQuery
+from app.routers.v1.graphql.queries.admin_user_query import AdminUserQuery
 
 
 @strawberry.type

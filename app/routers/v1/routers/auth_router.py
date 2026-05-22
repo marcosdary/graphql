@@ -9,8 +9,8 @@ from httpx import AsyncClient
 from app.core.config import settings, get_session
 from app.core.constants import Roles
 
-# Responses
-from app.graphql.utils import create_access_token
+# Utils
+from app.utils.create_access_token import create_access_token
 
 # DTOs
 from app.dto.user import (
@@ -26,7 +26,6 @@ from app.repositories import UserRepository, RoleRepository
 
 # Exceptions
 from app.exceptions import (
-    NotFoundError,
     InvalidCredentialsException
 )
 
@@ -118,7 +117,7 @@ async def callback(code: str, session: AsyncSession =  Depends(get_session)):
     if not user:
         raise HTTPException(
             detail="Informação do usuário não encontrada. Tente novamente.", 
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY
+            status_code=status.HTTP_400_BAD_REQUEST
         )
 
     session_new = await create_access_token(

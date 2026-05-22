@@ -1,7 +1,7 @@
 import strawberry
 
 # Mutations
-from app.graphql.mutations.admin_user_mutation import AdminUserMutation
+from app.routers.v1.graphql.mutations.admin_user_mutation import AdminUserMutation
 
 @strawberry.type
 class AdminMutation:

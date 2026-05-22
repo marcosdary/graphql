@@ -9,7 +9,7 @@ from app.repositories import UserRepository, RoleRepository
 from app.dto.user import UserRead, UserCreateDB, UserUpdateDB
 
 # Inputs
-from app.graphql.inputs import (
+from app.routers.v1.graphql.inputs import (
     UserInput,
     UserLoginInput,
     Verify2FAInput,
@@ -18,13 +18,13 @@ from app.graphql.inputs import (
 )
 
 # Responses
-from app.graphql.utils import create_access_token
+from app.utils.create_access_token import create_access_token
 
 # Types
-from app.graphql.types.two_factor_auth_type import TwoFactorAuthType
-from app.graphql.types.password_reset_type import PasswordResetType
-from app.graphql.types.user_type import UserPublicType
-from app.graphql.types.session_type import SessionType
+from app.routers.v1.graphql.types.two_factor_auth_type import TwoFactorAuthType
+from app.routers.v1.graphql.types.password_reset_type import PasswordResetType
+from app.routers.v1.graphql.types.user_type import UserPublicType
+from app.routers.v1.graphql.types.session_type import SessionType
 
 # Settings
 from app.core.config import settings

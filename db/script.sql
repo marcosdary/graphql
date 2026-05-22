@@ -5,7 +5,6 @@ create type papers as enum (
 
 create table users (
     user_id varchar(255) primary key,
-    google_id varchar(255),
     name varchar(255) not null,
     email varchar(255) not null unique,
     role_id varchar(255) not null,
@@ -89,6 +88,7 @@ select * from users;
 select * from token;
 select * from role where role_id = 'f20dcb79-e960-41ce-8055-80b5b3fb87b0';
 select * from permission;
+select * from role;
 
 delete from users where user_id in ('6ac1544a-a7d9-4e2c-9f88-7f58e86e34ba', '2b47bed5-6d45-499e-9568-cec0343f01fb'); 
 
@@ -106,11 +106,17 @@ from (
 ) as v(permission_id, name)
 where p.permission_id = v.permission_id ;
 
-
+update users 
+set
+	role_id = 'c7c24e42-2086-46d4-b95a-1b5a37b8346a'
+where user_id = 'c16c2f66-6b72-4a29-9c64-4168bb2ff2f2';
 
 
 select p.permission_id , p.name, r.role_id, r.name from role_permissions as rp
 inner join role as r on rp.role_id = r.role_id 
 inner join permission as p on rp.permission_id = p.permission_id;
+
+select email, r.name, password from users as u
+inner join role as r on r.role_id = u.role_id;
 
 

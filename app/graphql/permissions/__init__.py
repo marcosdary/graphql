@@ -1,1 +1,0 @@
-from app.graphql.permissions.session_permission import SessionPermission

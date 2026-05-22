@@ -12,17 +12,17 @@ from app.dto.user import (
 )
 
 # Inputs
-from app.graphql.inputs import (
+from app.routers.v1.graphql.inputs import (
     UserUpdatePublicInput,
 )
 
 # Permissions
-from app.graphql.permissions import (
+from app.routers.v1.graphql.permissions import (
     SessionPermission
 )
 
 # Types
-from app.graphql.types.user_type import UserPublicType
+from app.routers.v1.graphql.types.user_type import UserPublicType
 
 # Exceptions
 from app.exceptions import (

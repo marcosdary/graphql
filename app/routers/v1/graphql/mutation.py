@@ -1,6 +1,6 @@
 import strawberry
 
-from app.graphql.mutations import (
+from app.routers.v1.graphql.mutations import (
     AccountMutation, 
     AdminMutation,
     AuthMutation

@@ -12,18 +12,18 @@ from app.repositories.user_repository import UserRepository
 from app.dto.user import UserList, UserRead
 
 # Permissions
-from app.graphql.permissions import (
+from app.routers.v1.graphql.permissions import (
     SessionPermission
 )
 
 # Inputs
-from app.graphql.inputs import (
+from app.routers.v1.graphql.inputs import (
     PaginationInput,
     FilterByInput,
 )
 
 # Types
-from app.graphql.types.user_type import UserListType, UserPrivateType
+from app.routers.v1.graphql.types.user_type import UserListType, UserPrivateType
 
 @strawberry.type
 class AdminUserQuery:
