@@ -1,9 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-
-from app.routers import v1
-
+from app import routers
 
 app = FastAPI(title="API do graphql")
 
@@ -14,7 +12,7 @@ app.add_middleware(
     allow_headers=["Authorization","Content-Type"]
 )
 
-app.include_router(v1.router, prefix="/v1")
+app.include_router(routers.router, prefix="/api")
 
 @app.get("/")
 def index():

@@ -16,7 +16,6 @@ async def get_context(
 
     context.request = request
     context.response = response
-    context.api_key = request.headers.get("x-api-key")
     context.session = session
 
     return context

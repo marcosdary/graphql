@@ -47,7 +47,7 @@ from app.exceptions import (
 class AuthMutation:
 
     @strawberry.mutation
-    async def register(self, info: strawberry.Info, schema: UserInput) -> UserPublicType:
+    async def register(self, info: strawberry.Info, schema: UserInput) -> UserPublicType: 
         try:
             session = info.context.session
             data = schema.to_pydantic()

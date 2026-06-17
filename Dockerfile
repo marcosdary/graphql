@@ -43,4 +43,4 @@ USER python
 ENTRYPOINT []
 WORKDIR /app
 
-CMD ["uvicorn", "--host", "0.0.0.0", "--port", "$PORT", "app.main:app"]
+CMD ["uvicorn", "--host", "0.0.0.0", "--port", "$PORT", "app:app"]
